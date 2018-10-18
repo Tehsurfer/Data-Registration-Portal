@@ -30,6 +30,7 @@ var OrgansSceneData = function() {
 var OrgansViewer = function(ModelsLoaderIn)  {
   (require('./BaseModule').BaseModule).call(this);
   	this.geodes = [];
+  	this.THREE = THREE
 	var pickerScene = undefined;
 	var displayScene = undefined;
 	var defaultScene = undefined;
@@ -191,8 +192,12 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	var preRenderTimeUpdate = function() {
 		var currentTime = organsRenderer.getCurrentTime();
     for (var i = 0; i < timeChangedCallbacks.length;i++) {
+
       timeChangedCallbacks[i](currentTime);
     }
+    	if (this.video !== undefined){
+    		this.setVideoTime(currentTime)
+    	}
 		if (!sceneData.nerveMapIsActive && pickerScene)
 			pickerScene.setMorphsTime(currentTime);
 		if (sceneData.nerveMap && sceneData.nerveMap.additionalReader)
@@ -239,6 +244,79 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		if (sceneData.nerveMap && sceneData.nerveMap.additionalReader)
 			sceneData.nerveMap.additionalReader.setSliderPos(value);
 	}
+
+
+	this.setTextureForScene = function() {
+		targetScene = displayScene
+		if (targetScene) {
+			var geometry = new THREE.PlaneGeometry(1.6,1);
+
+			var vt = this.canvasVideo();
+			var material = new THREE.MeshLambertMaterial( { map: vt} );
+			
+			cube = new THREE.Mesh(geometry, material);
+			cube.rotateX(Math.PI/2)
+			this.cube = cube;
+			targetScene.addObject(cube);
+			targetScene.forEachGeometry(setTextureForGeometryCallback(vt));
+			if (sceneData.nerveMap)
+				sceneData.nerveMap.additionalReader.setTexture(vt);
+		}
+	}
+
+
+	function stopPlay(vid){
+
+		vid.onplay = vid.onclick = null;
+	}
+
+	function playByFrame(vid){
+
+		vid.onplay = vid.onclick = function() {
+		    vid.onplay = vid.onclick = null;
+		    
+		    setTimeout(function() {
+		        vid.pause();
+		        setInterval(function() {
+		            vid.currentTime += (1 / 29.97);       
+		        }, 2000);
+		    }, 12000);  
+		};
+	}
+
+	var setVideoTime = function(time){
+		console.log(this)
+		console.log(time)
+		adjustedTime = time/3000
+		video.currentTime = (adjustedTime / 16);
+	}
+	
+
+
+	this.canvasVideo = function(){
+		// create the video element
+		video = document.createElement( 'video' );
+		video.src = "models/videos/heartBeat.mp4";
+		video.load(); // must call after setting/changing source
+		stopPlay(video);
+		this.video = video;
+		setVideoTime(0);
+		videoImage = document.createElement( 'canvas' );
+		videoImage.width = 480;
+		videoImage.height = 480;
+
+		videoImageContext = videoImage.getContext( '2d' );
+		// background color if no video present
+		videoImageContext.fillStyle = '#000000';
+		videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+
+		videoTexture = new THREE.VideoTexture( video );
+		videoTexture.minFilter = THREE.LinearFilter;
+		videoTexture.magFilter = THREE.LinearFilter;
+		videoTexture.format = THREE.RGBFormat;
+		return videoTexture
+	}
+
 	
 	this.addSceneChangedCallback = function(callback) {
 	  if (typeof(callback === "function")) {
