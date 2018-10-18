@@ -55,5 +55,9 @@ Main = function()  {
   }
 
   initialise();
+  var vp = this.displayScene.findGeometriesWithGroupName('Video plane');
+  var vt = this.canvasVideo();
+  var material = new organsViewer.THREE.MeshLambertMaterial( { map: vt} );
+  vp[0].setMaterial(material)
 }
 
