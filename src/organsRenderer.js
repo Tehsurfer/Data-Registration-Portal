@@ -245,13 +245,6 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 			sceneData.nerveMap.additionalReader.setSliderPos(value);
 	}
 
-	// this.rendererVideo = function(){
-	// 	var vp = this.displayScene.findGeometriesWithGroupName('Video plane');
-	//     var vt = this.canvasVideo();
-	//     var material = new organsViewer.THREE.MeshLambertMaterial( { map: vt} );
-	//     vp[0].setMaterial(material)
-	// }
-
 
 	this.setTextureForScene = function() {
 		targetScene = displayScene
@@ -271,32 +264,6 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		}
 	}
 
-
-	function stopPlay(vid){
-
-		vid.onplay = vid.onclick = null;
-	}
-
-	function playByFrame(vid){
-
-		vid.onplay = vid.onclick = function() {
-		    vid.onplay = vid.onclick = null;
-		    
-		    setTimeout(function() {
-		        vid.pause();
-		        setInterval(function() {
-		            vid.currentTime += (1 / 29.97);       
-		        }, 2000);
-		    }, 12000);  
-		};
-	}
-
-	var setVideoTime = function(time){
-		console.log(this)
-		console.log(time)
-		adjustedTime = time/3000
-		video.currentTime = (adjustedTime / 16);
-	}
 	
 
 
@@ -306,6 +273,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		video.src = "models/videos/heartBeat.mp4";
 		video.load(); // must call after setting/changing source
 		video.play();
+		video.loop = true;
 		this.video = video;
 		videoImage = document.createElement( 'canvas' );
 		videoImage.width = 480;
