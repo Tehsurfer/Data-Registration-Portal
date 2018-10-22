@@ -22,7 +22,7 @@ exports.BlackfynnPanel = function(dailogName)  {
     var savedData
 
     var cors_api_url = '';//'https://cors-anywhere.herokuapp.com/';
-    var baseURL = "http://0.0.0.1:80";
+    var baseURL = "http://blackfynnpythonlink.ml";
 	
 	var _this = this;
 
