@@ -266,6 +266,10 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		}
 	}
 
+	var setVideoTime = function(time){
+		organsViewer.video.currentTime = time*4/3000
+	}
+
 	this.renderVideo = function(){
 
 		// Since this function gets called from window we need to specify that it is *organsViewer* 
@@ -274,6 +278,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		var vt = organsViewer.canvasVideo();
 		var material = new THREE.MeshLambertMaterial({ map: vt});
 		vp[0].setMaterial(material)
+		organsViewer.addTimeChangedCallback(setVideoTime)
 	}
 
 
@@ -282,8 +287,6 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		video = document.createElement( 'video' );
 		video.src = "models/videos/heartBeat.mp4";
 		video.load(); // must call after setting/changing source
-		video.play();
-		video.loop = true;
 		this.video = video;
 		videoImage = document.createElement( 'canvas' );
 		videoImage.width = 480;

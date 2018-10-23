@@ -33,7 +33,6 @@ Main = function()  {
         if (event.identifiers.length > 0) {
           console.log("highlighted", event.identifiers);
         }
-        console.log(this)
       }
     }
   }
