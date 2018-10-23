@@ -202,6 +202,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 			pickerScene.setMorphsTime(currentTime);
 		if (sceneData.nerveMap && sceneData.nerveMap.additionalReader)
 			sceneData.nerveMap.additionalReader.setTime(currentTime / 3000.0);
+
+		
 	}
 	
 	var preRenderTimeUpdateCallback = function() {
@@ -264,7 +266,15 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		}
 	}
 
-	
+	this.renderVideo = function(){
+
+		// Since this function gets called from window we need to specify that it is *organsViewer* 
+		// which has display scene and canvas video
+		var vp = organsViewer.displayScene.findGeometriesWithGroupName('Video plane');
+		var vt = organsViewer.canvasVideo();
+		var material = new THREE.MeshLambertMaterial({ map: vt});
+		vp[0].setMaterial(material)
+	}
 
 
 	this.canvasVideo = function(){
@@ -917,7 +927,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	            if (organsDetails.picker != undefined) {
 	              var pickerSceneName = name + "_picker_scene";
 	              pickerScene = organsRenderer.createScene(pickerSceneName);
-	              pickerScene.loadMetadataURL(modelsLoader.getOrgansDirectoryPrefix() + "/" + organsDetails.picker);
+	              // Callback to rendering the video once the picker scene is loaded (we send the organsViewer.renderVideo)
+	              pickerScene.loadMetadataURL(modelsLoader.getOrgansDirectoryPrefix() + "/" + organsDetails.picker, this.renderVideo);
 	              zincCameraControl.enableRaycaster(pickerScene, _pickingCallback(), _hoverCallback());
 	            } else {
 	              zincCameraControl.enableRaycaster(organScene, _pickingCallback(), _hoverCallback());
