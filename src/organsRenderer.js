@@ -31,6 +31,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
   (require('./BaseModule').BaseModule).call(this);
   	this.geodes = [];
   	this.THREE = THREE
+  	this.testVariable = 1;
 	var pickerScene = undefined;
 	var displayScene = undefined;
 	var defaultScene = undefined;
@@ -267,7 +268,11 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	}
 
 	var setVideoTime = function(time){
-		organsViewer.video.currentTime = time*4/3000
+			organsViewer.video.currentTime = time*4/3000;
+	}
+
+	var setTestVariable = function(time){
+			organsViewer.testVariable = time;
 	}
 
 	this.renderVideo = function(){
@@ -277,14 +282,16 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		var vp = organsViewer.displayScene.findGeometriesWithGroupName('Video plane');
 		var vt = organsViewer.canvasVideo();
 		var material = new THREE.MeshLambertMaterial({ map: vt});
-		vp[0].setMaterial(material)
-		organsViewer.addTimeChangedCallback(setVideoTime)
+		vp[0].setMaterial(material);
+		
+		organsViewer.addTimeChangedCallback(setTestVariable);
+		organsViewer.addTimeChangedCallback(setVideoTime);
 	}
 
 
 	this.canvasVideo = function(){
 		// create the video element
-		video = document.createElement( 'video' );
+		var video = document.createElement( 'video' );
 		video.src = "models/videos/heartBeat.mp4";
 		video.load(); // must call after setting/changing source
 		this.video = video;
