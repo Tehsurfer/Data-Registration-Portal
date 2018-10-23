@@ -295,14 +295,14 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		video.src = "models/videos/heartBeat.mp4";
 		video.load(); // must call after setting/changing source
 		this.video = video;
-		videoImage = document.createElement( 'canvas' );
-		videoImage.width = 480;
-		videoImage.height = 480;
+		// videoImage = document.createElement( 'canvas' );
+		// videoImage.width = 480;
+		// videoImage.height = 480;
 
-		videoImageContext = videoImage.getContext( '2d' );
-		// background color if no video present
-		videoImageContext.fillStyle = '#000000';
-		videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+		// videoImageContext = videoImage.getContext( '2d' );
+		// // background color if no video present
+		// videoImageContext.fillStyle = '#000000';
+		// videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
 
 		videoTexture = new THREE.VideoTexture( video );
 		videoTexture.minFilter = THREE.LinearFilter;
