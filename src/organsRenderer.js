@@ -1,4 +1,5 @@
 var THREE = require('three');
+var ZINC = require('zincjs');
 
 //Current model's associate data, data fields, external link, nerve map informations,
 //these are proived in the organsFileMap array.
@@ -31,6 +32,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
   (require('./BaseModule').BaseModule).call(this);
   	this.geodes = [];
   	this.THREE = THREE
+  	this.ZINC = ZINC
   	this.testVariable = 1;
 	var pickerScene = undefined;
 	var displayScene = undefined;
@@ -268,7 +270,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	}
 
 	var setVideoTime = function(time){
-			organsViewer.video.currentTime = time*4/3000;
+			organsViewer.video.currentTime = Number.parseFloat(time*4/3000).toFixed(2);
+
 	}
 
 	var setTestVariable = function(time){
@@ -294,20 +297,25 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		var video = document.createElement( 'video' );
 		video.src = "models/videos/heartBeat.mp4";
 		video.load(); // must call after setting/changing source
+		var player = videojs(video);
+		player.play();
 		this.video = video;
-		// videoImage = document.createElement( 'canvas' );
-		// videoImage.width = 480;
-		// videoImage.height = 480;
+		videoImage = document.createElement( 'canvas' );
+		videoImage.width = 480;
+		videoImage.height = 480;
 
-		// videoImageContext = videoImage.getContext( '2d' );
-		// // background color if no video present
-		// videoImageContext.fillStyle = '#000000';
-		// videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+		videoImageContext = videoImage.getContext( '2d' );
+		// background color if no video present
+		videoImageContext.fillStyle = '#000000';
+		videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+		_this.videoImageContext = videoImageContext
 
+		// videoTexture = new THREE.Texture( videoImage );
 		videoTexture = new THREE.VideoTexture( video );
 		videoTexture.minFilter = THREE.LinearFilter;
 		videoTexture.magFilter = THREE.LinearFilter;
 		videoTexture.format = THREE.RGBFormat;
+		_this.videoTexture = videoTexture;
 		return videoTexture
 	}
 
@@ -392,8 +400,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		  
 			if (intersects[0] !== undefined) {
 				if (displayScene.sceneName == "human/Cardiovascular/Heart") {
-					var id = Math.round(intersects[ 0 ].object.material.color.b * 255) ;
-					intersects[ 0 ].object.name = id.toString();
+					var id = intersects[ 0 ].object.name
+					// intersects[ 0 ].object.name = id.toString();
 					if (toolTip !== undefined) {
   					toolTip.setText("Node " + id);
   					toolTip.show(window_x, window_y);
@@ -436,9 +444,9 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		return function(intersects, window_x, window_y) {
 			if (intersects[0] !== undefined) {
 				if (displayScene.sceneName == "human/Cardiovascular/Heart") {
-					var id = Math.round(intersects[ 0 ].object.material.color.b * 255) ;
+					var id = intersects[ 0 ].object.name
 					//a temporary hack to put id into object name, this will be done differently
-					intersects[ 0 ].object.name = id.toString();
+					// intersects[ 0 ].object.name = id.toString();
 					displayArea.style.cursor = "pointer";
 					if (toolTip !== undefined) {
   	        toolTip.setText("Node " + id);
@@ -1001,6 +1009,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	  
 	  this.viewAll = function() {
 	    organsRenderer.viewAll();
+	    _this.organsRenderer = organsRenderer;
 	  }
 	  
 	  this.addNotifier = function(eventNotifier) {
