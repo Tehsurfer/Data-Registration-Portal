@@ -15,16 +15,17 @@ exports.BlackfynnPanel = function(dailogName)  {
 	var otherCellControls = undefined;
 	var dialogObject = undefined;
 	var localDialogName = dailogName;
-	var session_token = ''
-    var organisation = ''
-    var loaded_session_token = 0
-    this.datasets = []
-    var savedData
+	var session_token = '';
+    var organisation = '';
+    var loaded_session_token = 0;
+    this.datasets = [];
+    var savedData;
 
     var cors_api_url = '';//'https://cors-anywhere.herokuapp.com/';
     var baseURL = "http://blackfynnpythonlink.ml";
 	
 	var _this = this;
+	_this.channelCall = channelCall;
 
 
 	function drawBasic(data2){
@@ -46,6 +47,9 @@ exports.BlackfynnPanel = function(dailogName)  {
       };
       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
       chart.draw(data, options);
+      _this.chart = chart;
+      _this.chartData = data;
+      _this.chartOptions = options;
 
       $()
     }
@@ -59,7 +63,7 @@ exports.BlackfynnPanel = function(dailogName)  {
 
 	    for (var i in response){
 	        option = document.createElement( 'option' );
-	        option.value = option.text = response[i]
+	        option.value = option.text = response[i];
 	        select.add( option );  
 	    }
 
@@ -74,7 +78,7 @@ exports.BlackfynnPanel = function(dailogName)  {
 
 	    for (var i in response){
 	        option = document.createElement( 'option' );
-	        option.value = option.text = response[i]
+	        option.value = option.text = response[i];
 	        select.add( option );  
 	    }
 
@@ -170,8 +174,14 @@ exports.BlackfynnPanel = function(dailogName)  {
 	    getChannel(cors_api_url + baseRestURL, $('#select_channel :selected').text(), function childrenCallBack(response) {
 	        this.allSets = response;
 	        data = processData(JSON.parse(response.data))
-	        savedData = JSON.parse(response.data)
-	        drawBasic(JSON.parse(response.data))
+	        if (_this.chart !== undefined) {
+	        	newTable = addDataSeries(_this.chartData, JSON.parse(response.data), $('#select_channel :selected').text());
+	        	_this.chart.draw(newTable, _this.chartOptions)
+	        }
+	        else {
+		        savedData = JSON.parse(response.data);
+		        drawBasic(JSON.parse(response.data));
+		    }
 	    });
 
 	    function getChannel(baseRestURL, channel_name, callback){
@@ -213,7 +223,7 @@ exports.BlackfynnPanel = function(dailogName)  {
 
     });
     document.getElementById('select_dataset').onchange = datasetCall
-    document.getElementById('select_channel').onchange = channelCall
+    document.getElementById('select_channel').onchange = _this.channelCall
 
     }
 
@@ -257,7 +267,7 @@ exports.BlackfynnPanel = function(dailogName)  {
 	    var data2 = new google.visualization.DataTable();
 	    data2.addColumn('number', 'Time');
 	    data2.addColumn({type:'string', role:'annotation'})
-	    data2.addColumn('number', 'EEG value');
+	    data2.addColumn('number', $('#select_channel :selected').text());
 	    
 	    var ind = 0.00
 	    for (var i in data) {
@@ -267,6 +277,20 @@ exports.BlackfynnPanel = function(dailogName)  {
 	    }
 
 	    return data2
+	}
+
+	function addDataSeries(dataTable, newSeries, id){
+		dataTable.addColumn('number', id);
+
+		var numberOfRows = dataTable.getNumberOfRows()
+		var numberOfCols = dataTable.getNumberOfColumns()
+		var ind = 0.00
+	    for (var i = 1; i < numberOfRows; i++) {
+	        var row = [ind, null, data[i]]
+	        dataTable.setCell( i, numberOfCols - 1, newSeries[i] )
+	        ind = ind + .04;
+	    }
+	    return dataTable
 	}	 
 
 	

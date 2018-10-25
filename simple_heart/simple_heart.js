@@ -17,12 +17,7 @@ Main = function()  {
           if (window.blackfynnViewer == null){
             window.blackfynnViewer = new physiomeportal.BlackfynnPanel('Blackfynn login');  
             this.organsViewer.addTimeChangedCallback(window.blackfynnViewer.updateChart(document.getElementById('organ_animation_slider').value))
-          } else {
-            console.log('calling drawBasic') 
-            window.blackfynnViewer.drawBasic()
-          }
-
-          
+          }       
 
 
 

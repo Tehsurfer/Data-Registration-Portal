@@ -299,6 +299,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		video.load(); // must call after setting/changing source
 		var player = videojs(video);
 		player.play();
+		player.pause();
 		this.video = video;
 		videoImage = document.createElement( 'canvas' );
 		videoImage.width = 480;
@@ -403,8 +404,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 					var id = intersects[ 0 ].object.name
 					// intersects[ 0 ].object.name = id.toString();
 					if (toolTip !== undefined) {
-  					toolTip.setText("Node " + id);
-  					toolTip.show(window_x, window_y);
+	  					toolTip.setText("Node " + id);
+	  					toolTip.show(window_x, window_y);
 					}
 					var tissueTitle = "<strong>Tissue: <span style='color:#FF4444'>" + id + "</span></strong>";
 					if (tissueViewer) {
@@ -413,6 +414,12 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 						tissueViewer.showCollagenVisible(true);
 					}
 					_this.setSelectedByObjects([intersects[ 0 ].object], true);
+
+					 channel_selector = document.getElementById( 'select_channel' );
+					 if (channel_selector !== null){
+					 	channel_selector.selectedIndex = id % channel_selector.length;
+					 	channel_selector.onchange()
+					 } 
 				} else if (displayScene.sceneName.includes("human/Cardiovascular/Arterial")) {
 				  if (toolTip !== undefined) {
 				    toolTip.setText("Click to show vascular model");
