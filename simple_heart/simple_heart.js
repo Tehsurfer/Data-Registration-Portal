@@ -14,9 +14,8 @@ Main = function()  {
 
           console.log("selected", event.identifiers);
 
-          if (window.blackfynnViewer == null){
-            window.blackfynnViewer = new physiomeportal.BlackfynnPanel('Blackfynn login');  
-            this.organsViewer.addTimeChangedCallback(window.blackfynnViewer.updateChart(document.getElementById('organ_animation_slider').value))
+          if (window.electrodeViewer == null){
+            window.electrodeViewer = new physiomeportal.ElectrodePanel('Electrode Data Viewer');  
           }       
 
 

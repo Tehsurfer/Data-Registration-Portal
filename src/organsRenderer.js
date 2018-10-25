@@ -49,6 +49,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	var sceneData = new OrgansSceneData();
 	var timeoutID = 0;
 	var toolTip = undefined;
+	var lastTime = 0;
 	/**new**/
 	var timeChangedCallbacks = new Array();
 	var sceneChangedCallbacks = new Array();
@@ -198,9 +199,18 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 
       timeChangedCallbacks[i](currentTime);
     }
-    	// if (this.video !== undefined){
-    	// 	this.setVideoTime(currentTime)
-    	// }
+    	if (_this.video !== undefined){
+
+    		if( Math.abs( currentTime - lastTime ) > 10){
+
+		      // //draw video to canvas starting from upper left corner
+		      // videocanvasctx.drawImage(video, 0, 0);
+		      // //tell texture object it needs to be updated
+		      // spheretexture.needsUpdate = true;
+		      _this.video.currentTime = Number.parseFloat(currentTime*_this.video.duration/3000).toFixed(2);
+		      lastTime = currentTime
+		    }
+    	}
 		if (!sceneData.nerveMapIsActive && pickerScene)
 			pickerScene.setMorphsTime(currentTime);
 		if (sceneData.nerveMap && sceneData.nerveMap.additionalReader)
@@ -274,6 +284,13 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 
 	}
 
+	var setVideoTime2 = function(){
+
+		time = document.getElementById('organ_animation_slider').value
+		organsViewer.video.currentTime = Number.parseFloat(time*4/100).toFixed(2);
+
+	}
+
 	var setTestVariable = function(time){
 			organsViewer.testVariable = time;
 	}
@@ -288,7 +305,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		vp[0].setMaterial(material);
 		
 		organsViewer.addTimeChangedCallback(setTestVariable);
-		organsViewer.addTimeChangedCallback(setVideoTime);
+		// organsViewer.addTimeChangedCallback(setVideoTime);
+		// document.getElementById('organ_animation_slider').onchange = setVideoTime2
 	}
 
 
