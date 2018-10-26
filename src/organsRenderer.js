@@ -201,7 +201,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
     }
     	if (_this.video !== undefined){
 
-    		if( Math.abs( currentTime - lastTime ) > 10){
+    		if( Math.abs( currentTime - lastTime ) > 100){
 
 		      // //draw video to canvas starting from upper left corner
 		      // videocanvasctx.drawImage(video, 0, 0);
@@ -309,6 +309,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		var material = new THREE.MeshLambertMaterial({ map: vt});
 		material.side = THREE.DoubleSide;
 		vp[0].setMaterial(material);
+		// vector = { x: 691.1421859859543, y: 365.7027498233234, z: 1457.1116706498574 }
+		// _this.displayScene.camera.position.set(vector.x,vector.y,vector.z)
 		
 		organsViewer.addTimeChangedCallback(setTestVariable);
 		// organsViewer.addTimeChangedCallback(setVideoTime);
