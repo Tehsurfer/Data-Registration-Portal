@@ -300,11 +300,11 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		// Since this function gets called from window we need to specify that it is *organsViewer* 
 		// which has display scene and canvas video
 		var vp = organsViewer.displayScene.findGeometriesWithGroupName('Video plane');
-		vp[0].geometry.rotateX(Math.PI/2);
-		vp[0].geometry.rotateZ(Math.PI);
-		vp[0].geometry.rotateZ(-.2);
-		vp[0].geometry.scale(1.6,1.6,1.6);
-		vp[0].geometry.translate(0,0,-.3);
+		// vp[0].geometry.rotateX(Math.PI/2);
+		// vp[0].geometry.rotateZ(Math.PI);
+		// vp[0].geometry.rotateZ(-.2);
+		// vp[0].geometry.scale(1.6,1.6,1.6);
+		// vp[0].geometry.translate(0,0,-.3);
 		var vt = organsViewer.canvasVideo();
 		var material = new THREE.MeshLambertMaterial({ map: vt});
 		material.side = THREE.DoubleSide;

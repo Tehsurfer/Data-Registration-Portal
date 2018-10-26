@@ -1,11 +1,11 @@
 [
    {
-      "GroupName" : "ECG projection",
-      "MorphColours" : true,
+      "GroupName" : "Moving Mesh",
+      "MorphColours" : false,
       "MorphNormals" : false,
-      "MorphVertices" : false,
+      "MorphVertices" : true,
       "Type" : "Surfaces",
-      "URL" : "models/organsViewerModels/cardiovascular/heart/ecgAnimation.json"
+      "URL" : "models/organsViewerModels/cardiovascular/heart/web_gl_description_1.json"
    },
    {
       "GroupName" : "Video plane",
