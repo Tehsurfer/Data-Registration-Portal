@@ -419,8 +419,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		  
 			if (intersects[0] !== undefined) {
 				if (displayScene.sceneName == "human/Cardiovascular/Heart") {
-					var id = intersects[ 0 ].object.name
-					// intersects[ 0 ].object.name = id.toString();
+					var id = intersects[ 0 ].object.nameID
+					intersects[ 0 ].object.name = intersects[ 0 ].object.nameID;
 					if (toolTip !== undefined) {
 	  					toolTip.setText("Node " + id);
 	  					toolTip.show(window_x, window_y);
@@ -469,7 +469,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		return function(intersects, window_x, window_y) {
 			if (intersects[0] !== undefined) {
 				if (displayScene.sceneName == "human/Cardiovascular/Heart") {
-					var id = intersects[ 0 ].object.name
+					var id = intersects[ 0 ].object.nameID
+					intersects[ 0 ].object.name = intersects[ 0 ].object.nameID;
 					//a temporary hack to put id into object name, this will be done differently
 					// intersects[ 0 ].object.name = id.toString();
 					displayArea.style.cursor = "pointer";
@@ -490,9 +491,9 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 				} else if ((displayScene.sceneName.includes("human/Cardiovascular/ScaffoldHeart")) ||
 				    (displayScene.sceneName.includes("human/Cardiovascular/ScaffoldVentricle"))) {
 				  displayArea.style.cursor = "pointer";
-          if (intersects[ 0 ].object.name) {
+          if (intersects[ 0 ].object.nameID) {
             if (toolTip !== undefined) {
-              toolTip.setText(intersects[ 0 ].object.name);
+              toolTip.setText(intersects[ 0 ].object.nameID);
               toolTip.show(window_x, window_y);
             }
             _this.setHighlightedByObjects([intersects[ 0 ].object], true);
