@@ -34,9 +34,11 @@ var OrgansViewer = function(ModelsLoaderIn)  {
   	this.THREE = THREE
   	this.ZINC = ZINC
   	this.testVariable = 1;
+  	var video, slider, videoTexture, vt;
 	var pickerScene = undefined;
 	var displayScene = undefined;
 	var defaultScene = undefined;
+	var time = new Date();
 	var secondaryScene = undefined;
 	var tertiaryScene = undefined;
 	var nerveMapScene = undefined;
@@ -50,6 +52,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	var timeoutID = 0;
 	var toolTip = undefined;
 	var lastTime = 0;
+	var lastUpdate = 0;
+	var frameRate = 30;
 	/**new**/
 	var timeChangedCallbacks = new Array();
 	var sceneChangedCallbacks = new Array();
@@ -200,15 +204,12 @@ var OrgansViewer = function(ModelsLoaderIn)  {
       timeChangedCallbacks[i](currentTime);
     }
     	if (_this.video !== undefined){
+    		currentUpdate = new Date().getTime();
+    		if( ( Math.abs( currentTime - lastTime ) > 2 )  && ( (currentUpdate - lastUpdate) > 1000/frameRate )  && (video.readyState >= video.HAVE_CURRENT_DATA)) {
 
-    		if( Math.abs( currentTime - lastTime ) > 100){
-
-		      // //draw video to canvas starting from upper left corner
-		      // videocanvasctx.drawImage(video, 0, 0);
-		      // //tell texture object it needs to be updated
-		      // spheretexture.needsUpdate = true;
-		      _this.video.currentTime = Number.parseFloat(currentTime*_this.video.duration/3000).toFixed(2);
-		      lastTime = currentTime
+		      adjustVideoTime(currentTime);
+		      lastTime = currentTime;
+		      lastUpdate = currentUpdate;
 		    }
     	}
 		if (!sceneData.nerveMapIsActive && pickerScene)
@@ -217,6 +218,11 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 			sceneData.nerveMap.additionalReader.setTime(currentTime / 3000.0);
 
 		
+	}
+	var adjustVideoTime = function(time) {
+	   
+	    video.currentTime = Math.floor(time/3000 *video.duration * frameRate)/ frameRate
+	    vt.needsUpdate = true;
 	}
 	
 	var preRenderTimeUpdateCallback = function() {
@@ -261,72 +267,39 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	}
 
 
-	this.setTextureForScene = function() {
-		targetScene = displayScene
-		if (targetScene) {
-			var geometry = new THREE.PlaneGeometry(1.6,1);
-
-			var vt = this.canvasVideo();
-			var material = new THREE.MeshLambertMaterial( { map: vt} );
-			
-			cube = new THREE.Mesh(geometry, material);
-			cube.rotateX(Math.PI/2)
-			this.cube = cube;
-			targetScene.addObject(cube);
-			targetScene.forEachGeometry(setTextureForGeometryCallback(vt));
-			if (sceneData.nerveMap)
-				sceneData.nerveMap.additionalReader.setTexture(vt);
-		}
-	}
-
-	var setVideoTime = function(time){
-			organsViewer.video.currentTime = Number.parseFloat(time*4/3000).toFixed(2);
-
-	}
-
-	var setVideoTime2 = function(){
-
-		time = document.getElementById('organ_animation_slider').value
-		organsViewer.video.currentTime = Number.parseFloat(time*4/100).toFixed(2);
-
-	}
-
-	var setTestVariable = function(time){
-			organsViewer.testVariable = time;
-	}
-
 	this.renderVideo = function(){
 
 		// Since this function gets called from window we need to specify that it is *organsViewer* 
 		// which has display scene and canvas video
 		var vp = organsViewer.displayScene.findGeometriesWithGroupName('Video plane');
+		
 		// vp[0].geometry.rotateX(Math.PI/2);
 		// vp[0].geometry.rotateZ(Math.PI);
 		// vp[0].geometry.rotateZ(-.2);
 		// vp[0].geometry.scale(1.6,1.6,1.6);
 		// vp[0].geometry.translate(0,0,-.3);
-		var vt = organsViewer.canvasVideo();
+		vt = canvasVideo();
 		var material = new THREE.MeshLambertMaterial({ map: vt});
 		material.side = THREE.DoubleSide;
 		vp[0].setMaterial(material);
 		// vector = { x: 691.1421859859543, y: 365.7027498233234, z: 1457.1116706498574 }
 		// _this.displayScene.camera.position.set(vector.x,vector.y,vector.z)
 		
-		organsViewer.addTimeChangedCallback(setTestVariable);
 		// organsViewer.addTimeChangedCallback(setVideoTime);
 		// document.getElementById('organ_animation_slider').onchange = setVideoTime2
 	}
 
 
-	this.canvasVideo = function(){
+	var canvasVideo = function(){
 		// create the video element
-		var video = document.createElement( 'video' );
+		video = document.createElement( 'video' );
+
 		video.src = "models/videos/heartBeat.mp4";
 		video.load(); // must call after setting/changing source
 		var player = videojs(video);
 		player.play();
 		player.pause();
-		this.video = video;
+		_this.video = video;
 		videoImage = document.createElement( 'canvas' );
 		videoImage.width = 480;
 		videoImage.height = 480;
@@ -335,14 +308,23 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		// background color if no video present
 		videoImageContext.fillStyle = '#000000';
 		videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
-		_this.videoImageContext = videoImageContext
 
-		// videoTexture = new THREE.Texture( videoImage );
 		videoTexture = new THREE.VideoTexture( video );
+		// videoTexture = new THREE.VideoTexture( video );
 		videoTexture.minFilter = THREE.LinearFilter;
 		videoTexture.magFilter = THREE.LinearFilter;
 		videoTexture.format = THREE.RGBFormat;
 		_this.videoTexture = videoTexture;
+
+		// setInterval( function () {
+
+		// 	if ( video.readyState >= video.HAVE_CURRENT_DATA ) {
+
+		// 		videoTexture.needsUpdate = true;
+
+		// 	}
+
+		// }, 1000 / 30 );
 		return videoTexture
 	}
 
