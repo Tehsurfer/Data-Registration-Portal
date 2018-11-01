@@ -18,6 +18,7 @@ exports.ElectrodePanel = function(dailogName)  {
 	var session_token = '';
     var organisation = '';
     var loaded_session_token = 0;
+    var totaltime = 16;
     this.datasets = [];
     var savedData;
 
@@ -123,12 +124,6 @@ exports.ElectrodePanel = function(dailogName)  {
 
 	}
 
-	var setOnchange = function() {
-
-	    
-
-    }
-
 
 	function processData(data){
 
@@ -141,7 +136,7 @@ exports.ElectrodePanel = function(dailogName)  {
 	    for (var i in data) {
 	        var row = [ind, null, data[i]]
 	        data2.addRow(row)
-	        ind = ind + .04;
+	        ind = ind + totaltime/data.length;
 	    }
 
 	    return data2
@@ -155,7 +150,7 @@ exports.ElectrodePanel = function(dailogName)  {
 		var ind = 0.00
 	    for (var i = 1; i < numberOfRows; i++) {
 	        dataTable.setCell( i, numberOfCols - 1, newSeries[i] )
-	        ind = ind + .04;
+	        ind = ind + totaltime/newSeries.length;
 	    }
 	    return dataTable
 	}	 
