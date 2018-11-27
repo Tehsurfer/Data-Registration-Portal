@@ -29,6 +29,17 @@ var OrgansSceneData = function() {
  */
 var OrgansViewer = function(ModelsLoaderIn)  {
   (require('./BaseModule').BaseModule).call(this);
+    var video, slider, videoTexture, vt, vp, playPromise, videoPlaneTest, videoTest;
+    var x = 0;
+  	var y = 0;
+  	var videoPlaneLoadedFlag = false;
+  	var modelIsPlaying = false;
+  	var time = new Date();
+  	var lastTime = 0;
+	var lastUpdate = 0;
+	var frameRate = 30;
+	var chart = undefined;
+
 	var pickerScene = undefined;
 	var displayScene = undefined;
 	var defaultScene = undefined;
@@ -170,6 +181,13 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	 * Used to update internal timer in scene when time slider has changed.
 	 */
 	this.updateTime = function(value) {
+
+
+		//adjust the video time and then 
+		if (videoTexture !== undefined){
+			videoTexture.UpdateTimeFromSlider(value);
+		}
+
 		if (!sceneData.nerveMapIsActive) {
 			if (pickerScene)
 				pickerScene.setMorphsTime(value * 30);
@@ -190,6 +208,21 @@ var OrgansViewer = function(ModelsLoaderIn)  {
     for (var i = 0; i < timeChangedCallbacks.length;i++) {
       timeChangedCallbacks[i](currentTime);
     }
+
+    	//Update our video if it is misaligned
+    	if ( videoTexture !== undefined ){
+    		videoTexture.updateTimeIfOff(currentTime);
+    	}
+
+
+    	//Update our chart if it exists
+		if ( organsRenderer !== undefined ) {
+			if ( ( ( chart !== undefined) && Math.abs(lastTime - currentTime) > 10 )){
+				chart.updateTime(currentTime/3000*chart.totalTime);
+				lastTime = currentTime;
+			}
+		}
+
 		if (!sceneData.nerveMapIsActive && pickerScene)
 			pickerScene.setMorphsTime(currentTime);
 		if (sceneData.nerveMap && sceneData.nerveMap.additionalReader)
@@ -215,7 +248,9 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	  * time progression
 	  */
 	this.playAnimation = function(flag) {
-	  organsRenderer.playAnimation = flag;
+	  if ( videoTexture !== undefined ){
+	  	videoTexture.playAnimations(flag);
+	  }
 	}
 	
   /**
@@ -223,6 +258,9 @@ var OrgansViewer = function(ModelsLoaderIn)  {
    */
 	this.setPlayRate = function(value) {
 	  organsRenderer.setPlayRate(value);
+	  if (videoTexture !== undefined ) {
+	  	videoTexture.setPlayRate(value);
+	  }
 	}
 	
   /**
@@ -230,6 +268,10 @@ var OrgansViewer = function(ModelsLoaderIn)  {
    */
 	this.getPlayRate = function(value) {
 	  return organsRenderer.getPlayRate();
+	}
+
+	this.setChart = function(newChart){
+		chart = newChart;
 	}
 	
 	this.setTexturePos = function(value) {
@@ -317,12 +359,26 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		  
 			if (intersects[0] !== undefined) {
 				if (displayScene.sceneName == "human/Cardiovascular/Heart") {
-					var id = Math.round(intersects[ 0 ].object.material.color.b * 255) ;
-					intersects[ 0 ].object.name = id.toString();
-					//console.log(intersects[ 0 ].object.userData);
+					var id = intersects[ 0 ].object.nameID ;
+					intersects[ 0 ].object.name = intersects[ 0 ].object.nameID;
+	
 					if (toolTip !== undefined) {
-  					toolTip.setText("Node " + id);
-  					toolTip.show(window_x, window_y);
+  						toolTip.setText("Node " + id);
+  						toolTip.show(window_x, window_y);
+					}
+
+
+					if (chart !== undefined ){
+					 	channel_selector = document.getElementById( 'select_channel' );
+					 	channel_selector.selectedIndex = id % (channel_selector.length-2) + 1;
+					 	channel_selector.onchange()
+					} 
+					else{
+					 	chart = new (require("./electrode_panel").ElectrodePanel)('Electrode Data Viewer', id);
+					 	window.organsViewerDialog.setWidth("95%");
+    					window.organsViewerDialog.setHeight("60%");
+    					window.organsViewerDialog.setLeft("0px");
+    					window.organsViewerDialog.setTop("0px");
 					}
 					var tissueTitle = "<strong>Tissue: <span style='color:#FF4444'>" + id + "</span></strong>";
 					if (tissueViewer) {
@@ -362,13 +418,22 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		return function(intersects, window_x, window_y) {
 			if (intersects[0] !== undefined) {
 				if (displayScene.sceneName == "human/Cardiovascular/Heart") {
-					var id = Math.round(intersects[ 0 ].object.material.color.b * 255) ;
-					//a temporary hack to put id into object name, this will be done differently
-					intersects[ 0 ].object.name = id.toString();
+					var id = intersects[ 0 ].object.nameID
+					intersects[ 0 ].object.name = intersects[ 0 ].object.nameID;
+
 					displayArea.style.cursor = "pointer";
 					if (toolTip !== undefined) {
-  	        toolTip.setText("Node " + id);
-  	        toolTip.show(window_x, window_y);
+  	        			toolTip.setText("Node " + id);
+  	        			
+  	        			x = window_x;
+  	        			y = window_y;
+  	        			if (chart !== undefined && toolTip.chartExists === false){
+  	        				data = chart.getDataFromID(id%55);
+  	        				tipChart = chart.exportLineChart(toolTip.getChartElement(), data, id);
+  	        				_this.tipChart = tipChart;
+  	        				toolTip.chartExists = true;
+  	        			}
+  	        			toolTip.show(window_x, window_y);
 					}
 					_this.setHighlightedByObjects([intersects[ 0 ].object], true);
 					return;
@@ -398,8 +463,10 @@ var OrgansViewer = function(ModelsLoaderIn)  {
         }
 			}
 			else {
-			  if (toolTip !== undefined) {
-			    toolTip.hide();
+			  if (toolTip !== undefined && ( window_y < y || window_x < x || Math.abs(window_x-x)>700 || Math.abs(window_y-y>450) )  ){
+			  		x = window_x;
+  	        		y = window_y;
+			    	toolTip.hide();
 			  }
 			  displayArea.style.cursor = "auto";
 			  _this.setHighlightedByObjects([], true);
@@ -614,7 +681,12 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	    organsRenderer.animate();
 	    if (toolTip === undefined)
 	      toolTip = new (require("../ui/tooltip").ToolTip)(displayArea);
-	  } 
+	  }
+	  if (videoTexture === undefined) {
+	  	videoTexture = new (require("./video_texture").VideoTexture)();
+	 	videoTexture.setOrgansRenderer(organsRenderer);
+	  }
+
 	}
 
 	var imgZoom = function() {
@@ -864,7 +936,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	            if (organsDetails.picker != undefined) {
 	              var pickerSceneName = name + "_picker_scene";
 	              pickerScene = organsRenderer.createScene(pickerSceneName);
-	              pickerScene.loadMetadataURL(modelsLoader.getOrgansDirectoryPrefix() + "/" + organsDetails.picker);
+	              pickerScene.loadMetadataURL(modelsLoader.getOrgansDirectoryPrefix() + "/" + organsDetails.picker, enablePlayButton);
 	              zincCameraControl.enableRaycaster(pickerScene, _pickingCallback(), _hoverCallback());
 	            } else {
 	              zincCameraControl.enableRaycaster(organScene, _pickingCallback(), _hoverCallback());
@@ -911,6 +983,17 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	      if (timeoutID == 0)
 	        timeoutID = setTimeout(loadOrgansTimeoutCallback(speciesName, systemName, partName), 500);
 	    }
+
+	    // Set display scene for debugging
+	    this.displayScene = displayScene;
+	    //give the display scene to the videotexture so it can add it's video
+	    videoTexture.setDisplayScene(displayScene);
+	  }
+
+	  var enablePlayButton = function(){
+	  	var gg = document.getElementById('gui');
+	  	gg.style.position = 'absolute';
+	  	gg.style.zIndex = -2;
 	  }
 	  
 	  var loadOrgansTimeoutCallback = function(speciesName, systemName, partName) {

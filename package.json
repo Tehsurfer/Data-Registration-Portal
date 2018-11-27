@@ -46,7 +46,8 @@
     "webpack-jquery-ui": "^1.0.0"
   },
   "dependencies": {
-    "zincjs": "^0.29.5",
-    "dialog-polyfill": "^0.4.10"
+    "dialog-polyfill": "^0.4.10",
+    "jquery": "^3.3.1",
+    "zincjs": "^0.29.5"
   }
 }

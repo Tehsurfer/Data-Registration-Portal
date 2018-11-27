@@ -3,6 +3,7 @@
 	background-color: #fff;
 	pointer-events: none;
 	cursor: pointer;
+    z-index: 2;
 }
 
 .tooltip {
@@ -10,6 +11,7 @@
 	display: inline-block;
 	border-bottom: 1px dotted black;
 	pointer-events: none;
+    z-index: 2;
 }
 
 .tooltip .tooltiptext {
@@ -24,7 +26,7 @@
     border-style: groove;
     padding: 5px 0;
     position: absolute;
-    z-index: 1;
+    z-index: 2;
     bottom: 125%;
     left: 50%;
     margin-left: -60px;
@@ -42,5 +44,13 @@
     border-width: 5px;
     border-style: solid;
     border-color: #2b7ccc transparent transparent transparent;
+}
+.chart {
+    visibility: hidden;
+    background-color: #555;
+    color: #555;
+    opacity: 0;
+    transition: opacity 0.5s;
+    z-index: 2;
 }
 
