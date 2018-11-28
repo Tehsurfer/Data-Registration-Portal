@@ -72,7 +72,7 @@ input:checked + .switchSlider:before {
     width: 300px;
     height:300px;
     z-index: 2;
-    background-image: url(./images/gg.gif);
+    background-image: url(./images/loading.gif);
 }
 
 .play {
@@ -87,7 +87,7 @@ input:checked + .switchSlider:before {
   height: 130px;
   width: 130px;
   z-index:.5;
-  background-image: url(./images/gg.gif);
+  background-image: url(./images/loading.gif);
 }
 
 .play:hover {
