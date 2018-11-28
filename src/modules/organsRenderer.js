@@ -29,7 +29,7 @@ var OrgansSceneData = function() {
  */
 var OrgansViewer = function(ModelsLoaderIn)  {
   (require('./BaseModule').BaseModule).call(this);
-    var video, slider, videoTexture, vt, vp, playPromise, videoPlaneTest, videoTest;
+    var video, slider, videoTexture, vt, vp, playPromise, loadedTest, videoPlaneTest, videoTest;
     var x = 0;
   	var y = 0;
   	var videoPlaneLoadedFlag = false;
@@ -785,6 +785,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	   * the viewport is correct.
 	   */
   var _addOrganPartCallback = function(systemName, partName, useDefautColour) {
+  	console.log(partName);
     return function(geometry) {
       if (geometry.groupName) {
         for (var i = 0; i < organPartAddedCallbacks.length;i++) {
@@ -936,7 +937,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	            if (organsDetails.picker != undefined) {
 	              var pickerSceneName = name + "_picker_scene";
 	              pickerScene = organsRenderer.createScene(pickerSceneName);
-	              pickerScene.loadMetadataURL(modelsLoader.getOrgansDirectoryPrefix() + "/" + organsDetails.picker, enablePlayButton);
+	              pickerScene.loadMetadataURL(modelsLoader.getOrgansDirectoryPrefix() + "/" + organsDetails.picker);
 	              zincCameraControl.enableRaycaster(pickerScene, _pickingCallback(), _hoverCallback());
 	            } else {
 	              zincCameraControl.enableRaycaster(organScene, _pickingCallback(), _hoverCallback());
@@ -988,12 +989,25 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	    this.displayScene = displayScene;
 	    //give the display scene to the videotexture so it can add it's video
 	    videoTexture.setDisplayScene(displayScene);
+	    loadedTest = setInterval(_allModelsLoaded, 300);
 	  }
 
+	  var _allModelsLoaded = function(){
+	  	if (displayScene !== undefined){
+	  		if ( displayScene.findGeometriesWithGroupName('ECG projection').length > 0 ){
+	  		document.getElementById('viewerLoadingGif').remove();
+  			console.log('Loading gif removed');
+  			clearInterval(loadedTest);
+	  		}
+	  	}
+	  }
+
+
 	  var enablePlayButton = function(){
-	  	var gg = document.getElementById('gui');
-	  	gg.style.position = 'absolute';
-	  	gg.style.zIndex = -2;
+	  	// var side_panel = document.getElementById('gui');
+	  	// side_panel.style.position = 'absolute';
+	  	// side_panel.style.zIndex = -2;
+	  	document.getElementById('organsPlayToggle').className = "play"
 	  }
 	  
 	  var loadOrgansTimeoutCallback = function(speciesName, systemName, partName) {

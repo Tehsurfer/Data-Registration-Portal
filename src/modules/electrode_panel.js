@@ -1,6 +1,7 @@
 // var dat = require("./dat.gui.js");
 // require("./styles/dat-gui-swec.css");
 // var Plotly = require('../src/utilities/plotlyModule');
+// require("./styles/my_styles.css");
 
 
 /**
@@ -71,7 +72,8 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
 	    getDataCall( baseURL, function childrenCallBack() {
 	    	_this.totalTime = times[times.length-1];
 	        createChannelDropdown()
-	        document.getElementById('select_channel').onchange = addSelectedDataSet
+	        document.getElementById('select_channel').onchange = addSelectedDataSet;
+	        document.getElementById('chartLoadingGif').remove();
 	        addSelectedDataSet()
 	    });
 
@@ -112,7 +114,7 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
 	    	else {
 	        	savedData = allData[selection];
 	        	createChart(allData[selection], selection);
-	        	drawChart();
+	        	// document.getElementById('chartLoadingGif').remove();
 	    	}
 		}
 		selection.selectedIndex = 0;
@@ -177,10 +179,6 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
 	    return [dataTrace]
 	}
 
-	
-
-    function drawChart(){
-	}
 
 
 
