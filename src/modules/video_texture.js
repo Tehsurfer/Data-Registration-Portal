@@ -78,7 +78,7 @@ exports.VideoTexture = function()  {
 			//check if video cannot play
 			if ( video.readyState < 2 ){
 				_this.playAnimations(false);
-				videoTest = setTimeout(videoIsReady, 20);
+				videoTest = setTimeout(videoIsReadyToPlay, 20);
 			}
 		}
 	}

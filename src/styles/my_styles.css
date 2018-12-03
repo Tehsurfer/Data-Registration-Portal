@@ -64,14 +64,9 @@ input:checked + .switchSlider:before {
 }
 
 .loadingGif{
-	position: relative;
-	display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%;
-    width: 300px;
-    height:300px;
-    z-index: 2;
+	width:48px;
+  	height:48px;
+  	right: 10px;
     background-image: url(./images/loading.gif);
 }
 
@@ -80,6 +75,7 @@ input:checked + .switchSlider:before {
   height:48px;
   right: 10px;
   background-image: url(./images/play_small.png);
+  visibility: hidden;
 }
 .playLoading {
   position: relative;

@@ -684,6 +684,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	  }
 	  if (videoTexture === undefined) {
 	  	videoTexture = new (require("./video_texture").VideoTexture)();
+	  	_this.videoTexture = videoTexture;
 	 	videoTexture.setOrgansRenderer(organsRenderer);
 	  }
 
@@ -996,6 +997,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	  	if (displayScene !== undefined){
 	  		if ( displayScene.findGeometriesWithGroupName('ECG projection').length > 0 ){
 	  		document.getElementById('viewerLoadingGif').remove();
+	  		document.getElementById('organsPlayToggle').className = "play";
+	  		document.getElementById('organsPlayToggle').style.visibility = 'visible';
   			console.log('Loading gif removed');
   			clearInterval(loadedTest);
 	  		}
@@ -1010,6 +1013,12 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	  	document.getElementById('organsPlayToggle').className = "play"
 	  }
 	  
+	  this.destroyChart = function(){
+	  	_this.chart = undefined;
+	  	chart = undefined;
+	  	chartExists = false;
+	  }
+
 	  var loadOrgansTimeoutCallback = function(speciesName, systemName, partName) {
 	    return function () {
 	      timeoutID = 0;

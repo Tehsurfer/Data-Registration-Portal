@@ -23,7 +23,7 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
     var colours = [];
     var modelURL;
 
-    var baseURL = "file:///C:/Users/jkho021/Projects/web/alansnew/MPB/simple_heart";
+    var baseURL = "";
 	
 	var _this = this;
 	_this.channelCall = addSelectedDataSet;
@@ -78,7 +78,7 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
 	    });
 
 	    function getDataCall(baseRestURL, callback){
-	        var APIPath = "/models/data/ecgDataFull.json";
+	        var APIPath = "./models/data/ecgDataFull.json";
 	        var completeRestURL = baseRestURL + APIPath;
 	        console.log("REST API URL: " + completeRestURL);
 
@@ -259,7 +259,11 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
 		cc[1].onclick = destroyPanel;
   	}
   	var destroyPanel = function(){
-  		window.organsViewer.chart = undefined;
+  		plot = undefined;
+  		select = undefined;
+  		document.getElementById('select_channel').remove()
+  		window.organsViewer.destroyChart();
+  		_this.callbackArray = [function(input){}]
   		(require('./BaseModule').BaseModule).prototype.destroy.call( _this );
   	}
 	
