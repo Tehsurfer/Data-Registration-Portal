@@ -220,7 +220,7 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
 	}
 
 	var runModel = function(modelURL) {
-		var opencorURL = 'opencor://openFile/' + modelURL;
+		var opencorURL = modelURL;
 		window.open(opencorURL, '_self');
 	}
 	
