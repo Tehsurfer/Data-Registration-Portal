@@ -24,7 +24,7 @@ exports.MANAGER_ITEM_CHANGE = require("./utilities/manager").MANAGER_ITEM_CHANGE
 exports.MODULE_CHANGE = require("./BaseModule").MODULE_CHANGE;
 exports.BlackfynnPanel = require("./blackfynn_panel").BlackfynnPanel;
 exports.ElectrodePanel = require("./electrode_panel").ElectrodePanel;
-exports.Main = require("../simple_heart/simple_heart.js").Main;
+exports.Main = require("../simple_heart.js").Main;
 //exports.CellPanelDialog = require("./ui/CellPanelDialog").CellPanelDialog;
 exports.VERSION = '0.2.0';
 
