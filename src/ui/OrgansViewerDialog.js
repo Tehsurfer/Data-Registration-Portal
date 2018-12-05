@@ -145,7 +145,7 @@ var OrgansViewerDialog = function(organsViewerIn) {
   var updateLink = function(sceneData) {
     var button = _myInstance.container.find("#organLinkButton")[0];
     if (sceneData.externalOrganLink) {
-      button.style.visibility = "visible";
+      button.style.visibility = "hidden";
     } else {
       button.style.visibility = "hidden";
     }

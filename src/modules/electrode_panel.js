@@ -74,6 +74,7 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
 	        createChannelDropdown()
 	        document.getElementById('select_channel').onchange = addSelectedDataSet;
 	        document.getElementById('chartLoadingGif').remove();
+	        document.getElementById('OpenCORLinkButton').style = "text-align:center;width:100%;position: relative;visibility: visible;";
 	        addSelectedDataSet()
 	    });
 
@@ -125,6 +126,9 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
       chartData = processData(createChartData, id);
 
       chartOptions = {
+		autosize: true,
+		width: window.innerWidth-100,
+		height: Math.floor(window.innerHeight/2)-70,
   		title: 'ECG signals', 
   		xaxis: {
   		  type: 'seconds',
