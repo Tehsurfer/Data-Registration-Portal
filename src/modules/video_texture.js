@@ -138,11 +138,11 @@ exports.VideoTexture = function()  {
 		vp = displayScene.findGeometriesWithGroupName('Video plane');
 
 		//adjust our mesh to be in the correct position
-		vp[0].geometry.rotateX(Math.PI/2);
-		vp[0].geometry.rotateZ(Math.PI);
-		vp[0].geometry.rotateZ(-.2);
-		vp[0].geometry.scale(1.6,1.6,1.6);
-		vp[0].geometry.translate(0,0,-.3);
+		// vp[0].geometry.rotateX(Math.PI/2);
+		// vp[0].geometry.rotateZ(Math.PI);
+		// vp[0].geometry.rotateZ(-.2);
+		// vp[0].geometry.scale(1.6,1.6,1.6);
+		// vp[0].geometry.translate(0,0,-.3);
 
 		//get our video texture
 		vt = createCanvasVideoTexture();

@@ -305,7 +305,7 @@ var OrgansViewerDialog = function(organsViewerIn) {
     _myInstance.container.find("#organGui")[0].appendChild(_myInstance.datGui.domElement);
     var resetViewButton = { 'Reset View':function(){ organsViewer.resetView() }};
     var viewAllButton = { 'View All':function(){ organsViewer.viewAll() }};
-    speedSlider = _myInstance.datGui.add(organGuiControls, 'Speed', 0.01, 2).step(.01).onChange(speedSliderChanged());
+    speedSlider = _myInstance.datGui.add(organGuiControls, 'Speed', 0.01, 10).step(.01).onChange(speedSliderChanged());
     _myInstance.datGui.add(resetViewButton, 'Reset View');
     _myInstance.datGui.add(viewAllButton, 'View All');
     organPartsGui = _myInstance.datGui.addFolder('Visibility Control');
