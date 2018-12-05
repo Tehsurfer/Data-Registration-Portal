@@ -213,14 +213,14 @@ exports.ElectrodePanel = function(dailogName, firstSelection)  {
 	}
 
 	function createOpenCORlink(){
-		modelURL = baseURL + "/models/data/openCorExport.csv"
+		modelURL = window.location.href + "/models/data/openCorExport.csv"
 		runModelButton = document.getElementById('OpenCORLinkButton')
 		runModelButton.onclick = function(){runModel(modelURL)};
 
 	}
 
 	var runModel = function(modelURL) {
-		var opencorURL = 'opencor://openFile/' + modelURL;
+		var opencorURL = modelURL;
 		window.open(opencorURL, '_self');
 	}
 	
