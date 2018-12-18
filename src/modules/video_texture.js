@@ -8,6 +8,7 @@ exports.VideoTexture = function()  {
 	var lastTime = 0;
 	var lastUpdate = 0;
 	var frameRate = 30;
+	var modelDuration = 3000;
 	var videoPlaneLoadedFlag = false;
 	_this.vt = undefined;
 	_this.video = undefined;
@@ -17,14 +18,11 @@ exports.VideoTexture = function()  {
 	  	video.src = "models/videos/heartBeatFullHD.mp4";
 	  	video.load();
 	  	video.loop = true;
-
 		video.addEventListener('loadeddata', loadedVid);
 	}
 
 	//this.playAnimations plays both the video and model ( once video has loaded )
 	this.playAnimations = function(flag){
-
-
 		if ( flag === true ){
 
 		  	playPromise = video.play();
@@ -46,6 +44,7 @@ exports.VideoTexture = function()  {
 		        // playback has started so we can now pause
 		        video.pause();
 		        organsRenderer.playAnimation = flag;
+		        playPromise = undefined;
 		    })
 		    .catch(error => {
 		        // Auto-play was prevented
@@ -67,7 +66,7 @@ exports.VideoTexture = function()  {
 
 	this.setPlayRate = function(value){
 		if (video !== undefined && video.readyState >= 1){
-			video.playbackRate = value*video.duration/3000;
+			video.playbackRate = value*video.duration/modelDuration;
 		}
 	}
 
@@ -93,7 +92,7 @@ exports.VideoTexture = function()  {
 
 	var loadedVid = function(){
 	  	if(video.readyState >= 1) {
-		    _this.setPlayRate(3000/video.duration); //currently an issue
+		    _this.setPlayRate(modelDuration/video.duration); //currently an issue
 		    video.removeEventListener('loadeddata',loadedVid);
 		    videoPlaneTest = setInterval(videoPlaneLoaded, 1000);
 		}
@@ -106,7 +105,7 @@ exports.VideoTexture = function()  {
 	  			clearInterval(videoPlaneTest);
 	  			connectVideoToTexture();
 	  			videoPlaneLoadedFlag = true;
-	  			organsRenderer.setPlayRate(3000/video.duration);
+	  			organsRenderer.setPlayRate(modelDuration/video.duration);
 	  		}
 	  	}
 	}
@@ -137,13 +136,6 @@ exports.VideoTexture = function()  {
 
 		vp = displayScene.findGeometriesWithGroupName('Video plane');
 
-		//adjust our mesh to be in the correct position
-		// vp[0].geometry.rotateX(Math.PI/2);
-		// vp[0].geometry.rotateZ(Math.PI);
-		// vp[0].geometry.rotateZ(-.2);
-		// vp[0].geometry.scale(1.6,1.6,1.6);
-		// vp[0].geometry.translate(0,0,-.3);
-
 		//get our video texture
 		vt = createCanvasVideoTexture();
 
@@ -160,8 +152,8 @@ exports.VideoTexture = function()  {
 
 		//define our variables for checking if it is worth updating the frame
 		var not_updating_faster_than_framerate = Math.abs(currentUpdate - lastUpdate) > 1000*10/frameRate;
-		var not_at_start_or_end_of_video = ( currentTime > 5 ) || ( currentTime < (3000-5) ) ;
-		var model_off_by_more_than_10_frames = Math.abs(currentTime/3000*video.duration - video.currentTime ) > 3/frameRate
+		var not_at_start_or_end_of_video = ( currentTime > 5 ) || ( currentTime < (modelDuration - 5) ) ;
+		var model_off_by_more_than_10_frames = Math.abs(currentTime/modelDuration*video.duration - video.currentTime ) > 3/frameRate
 
 		if( not_updating_faster_than_framerate && not_at_start_or_end_of_video && model_off_by_more_than_10_frames){
         	lastTime = currentTime;
@@ -174,7 +166,7 @@ exports.VideoTexture = function()  {
 	var adjustVideoTime = function(time) {
 	   	
 	   	//we floor to the frame rate to try and grab the exact time of a frame
-	    video.currentTime = Math.floor(time/3000 *video.duration * frameRate)/ frameRate
+	    video.currentTime = Math.floor(time/modelDuration * video.duration * frameRate)/ frameRate
 	    vt.needsUpdate = true;
 	}
 
