@@ -145,18 +145,18 @@ exports.VideoTexture = function()  {
 		vp[0].setMaterial(material);
 	}
 
-	// videoTimeMisaligned returns true if *currentTime* is more than .5% off the video time
-	var videoTimeMisaligned = function(currentTime){
+	// videoTimeMisaligned returns true if *currentModelTime* is more than .5% off the video time
+	var videoTimeMisaligned = function(currentModelTime){
 
 		currentUpdate = new Date().getTime();
 
 		//define our variables for checking if it is worth updating the frame
 		var not_updating_faster_than_framerate = Math.abs(currentUpdate - lastUpdate) > 1000*10/frameRate;
-		var not_at_start_or_end_of_video = ( currentTime > 5 ) || ( currentTime < (modelDuration - 5) ) ;
-		var model_off_by_more_than_10_frames = Math.abs(currentTime/modelDuration*video.duration - video.currentTime ) > 3/frameRate
+		var not_at_start_or_end_of_video = ( currentModelTime > 5 ) || ( currentModelTime < (modelDuration - 5) ) ;
+		var model_off_by_more_than_10_frames = Math.abs(currentModelTime/modelDuration*video.duration - video.currentTime ) > 10/frameRate
 
 		if( not_updating_faster_than_framerate && not_at_start_or_end_of_video && model_off_by_more_than_10_frames){
-        	lastTime = currentTime;
+        	lastTime = currentModelTime;
         	lastUpdate = currentUpdate;
         	return true;
 	    }
