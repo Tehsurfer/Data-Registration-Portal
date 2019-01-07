@@ -16,7 +16,7 @@ Devloper Installation
 npm install
 npm run build
 ```
-4. Open simple_heart/index.html in Firex 
+4. Open simple_heart/index.html in Firefox 
 
     OR
     
