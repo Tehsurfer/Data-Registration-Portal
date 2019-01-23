@@ -12,22 +12,8 @@ exports.SVGController = function(SVGPanel)  {
 	//used for tracking right click
 	var svgRightClickDown = false;
 	// Temoporary hardcoded array on interactive elements/groups of the svg
-	var svgLayoutCallbacksElement = new Array();
-	svgLayoutCallbacksElement["Sodium_button"] = "Sodium";
-	svgLayoutCallbacksElement["Potassium_button"] = "Potassium";
-	svgLayoutCallbacksElement["Chloride_button"] = "Chloride";
-	svgLayoutCallbacksElement["Hydrogen_button"] = "Hydrogen";
-	svgLayoutCallbacksElement["Calcium_button"] = "Calcium";
-	svgLayoutCallbacksElement["Anion_button"] = "Anion";
-	svgLayoutCallbacksElement["Metabolism_button"] = "Metabolism";
-	
-	var svgIonChannelCallbackElement = new Array();
-	svgIonChannelCallbackElement["v1_button"] = "v1_expression";
-	
-	var svgCannelExpressionCallbackElement = new Array();
-	svgCannelExpressionCallbackElement["v1_expression"] = " https://models.physiomeproject.org/e/430/sodium_ion_channel.cellml/view";
-	
 	var currentZoom = 1.0;
+	var svgElementClickedCallbacks = new Array();
 
 	var _this = this;
 	
@@ -87,9 +73,9 @@ exports.SVGController = function(SVGPanel)  {
 	
 	var onSVGScrollEvent = function(event) {
 			if (event.deltaY > 0) {
-				_this.zoomIn(0.1);
-			} else if (event.deltaY < 0) {
 				_this.zoomOut(0.1);
+			} else if (event.deltaY < 0) {
+				_this.zoomIn(0.1);
 			}
 			event.preventDefault(); 
 			event.stopPropagation();
@@ -152,24 +138,10 @@ exports.SVGController = function(SVGPanel)  {
 	    }
 	}
 	
-	this.expandCollapse = function(source) {
-		if (source.value=="Expand") {
-			var targetelement = svgObject.contentDocument;
-			enableSVGMouseInteraction(targetelement);
-			targetelement = document.getElementById("modelsContainer");
-			enableSVGMouseInteraction(targetelement);
-		} else {
-			var targetelement = svgObject.contentDocument;
-			disableSVGMouseInteraction(targetelement);
-			targetelement = document.getElementById("modelsContainer");
-			disableSVGMouseInteraction(targetelement);
-		}
+	var enableInteraction = function() {
+		var targetelement = svgObject.contentDocument;
+		enableSVGMouseInteraction(targetelement);
 		_this.zoomReset();
-		for (var key in svgLayoutCallbacksElement) {
-			if (svgLayoutCallbacksElement.hasOwnProperty(key)) {
-				svgElementIdToggle(key);
-			}
-		}
 	}
 	
 	//Toggle a svg group based on the group name
@@ -185,8 +157,16 @@ exports.SVGController = function(SVGPanel)  {
 		}
 	}
 	
+	var svgElementClicked = function(element) {
+	   return function() {
+       for (var i = 0; i < svgElementClickedCallbacks.length;i++) {
+         svgElementClickedCallbacks[i](element);
+       }
+	    }
+	}
+	
 	//Add reponses to clickable SVG groups, this is currently hardcoded
-	var addRespsonseToSVGElements = function() {
+	var addMyocyteV6SVGElementsResponse = function(svgLayoutCallbacksElement) {
 		var svgDocument = svgObject.contentDocument;
 		for (var key in svgLayoutCallbacksElement) {
 			if (svgLayoutCallbacksElement.hasOwnProperty(key)) {
@@ -221,18 +201,39 @@ exports.SVGController = function(SVGPanel)  {
 	 * SVG diagram has been loaded, add svg callbacks and actions.
 	 * @async
 	 */
-	var svgLoaded = function() {
-		for (var key in svgLayoutCallbacksElement) {
-			if (svgLayoutCallbacksElement.hasOwnProperty(key)) {
-				svgElementIdToggle(key);
-			}
-		}
-		for (var key in svgCannelExpressionCallbackElement) {
-			if (svgCannelExpressionCallbackElement.hasOwnProperty(key)) {
-				svgElementIdToggle(key);
-			}
-		}
-		addRespsonseToSVGElements();
+	var myocyteV6SVGLoaded = function() {
+	  
+	  var svgIonChannelCallbackElement = new Array();
+	  svgIonChannelCallbackElement["v1_button"] = "v1_expression";
+	  
+	  var svgCannelExpressionCallbackElement = new Array();
+	  svgCannelExpressionCallbackElement["v1_expression"] = " https://models.physiomeproject.org/e/430/sodium_ion_channel.cellml/view";
+	  
+	  
+	  var svgLayoutCallbacksElement = new Array();
+	  svgLayoutCallbacksElement["Sodium_button"] = "Sodium";
+	  svgLayoutCallbacksElement["Potassium_button"] = "Potassium";
+	  svgLayoutCallbacksElement["Chloride_button"] = "Chloride";
+	  svgLayoutCallbacksElement["Hydrogen_button"] = "Hydrogen";
+	  svgLayoutCallbacksElement["Calcium_button"] = "Calcium";
+	  svgLayoutCallbacksElement["Anion_button"] = "Anion";
+	  svgLayoutCallbacksElement["Metabolism_button"] = "Metabolism";
+	  
+		addMyocyteV6SVGElementsResponse(svgLayoutCallbacksElement);
+	}
+	
+	var respiratoryControlLoaded = function() {
+	  
+	   var svgDocument = svgObject.contentDocument;
+	   var diagram = svgDocument.getElementById("diagram_flatmap");
+	   diagram.style.visibility = "hidden";
+	   var respoonsiveIds = ['g1665', 'g1683', 'g1701', 'g1735', 'g1745',
+	     'g1751', 'g1757', 'g1827'];
+	   for (var i = 0; i < respoonsiveIds.length; i++) {
+	     var element = svgDocument.getElementById(respoonsiveIds[i]);
+	     element.addEventListener('click', svgElementClicked(element));
+	     element.style.cursor = "pointer"; 
+	   }
 	}
 	
 	var genericSVGLoaded = function() {
@@ -241,6 +242,15 @@ exports.SVGController = function(SVGPanel)  {
 	  for (var i = 0; i < svgElements.length; i++) {
 	    svgElements[i].style.cursor = "pointer"; 
 	  }
+	}
+	
+	this.getSVGContent = function() {
+	  return svgObject.contentDocument;
+	}
+	
+	this.addSVGElementClickedCallbacks = function(callback) {
+    if (typeof(callback === "function"))
+      svgElementClickedCallbacks.push(callback);
 	}
 	
 	/**
@@ -252,16 +262,24 @@ exports.SVGController = function(SVGPanel)  {
 		var svgFullName = "svg/" + svgName;
 		if (svgName == "Myocyte_v6_Grouped.svg") {
 			svgObject.onload = function() {
-				svgLoaded();
+			  enableInteraction();
+			  myocyteV6SVGLoaded();
 				runModelURL = 'https://models.cellml.org/workspace/noble_1962/rawfile/c70f8962407db00673f1fdcac9f35a2593781c17/noble_1962.sedml';
 			}
+		} else if (svgName == "respiratory-control-background.svg") {
+		  svgObject.onload = function() {
+		    enableInteraction();
+		    respiratoryControlLoaded();
+		  }
 		} else {
       svgObject.onload =  function() {
+        enableInteraction();
         genericSVGLoaded();
         runModelURL = 'https://models.physiomeproject.org/workspace/4ac/rawfile/99f626ad282c900cf3665f2119ab70f61ec2ba3c/Circulation_Model.sedml';
       }
     }	
 		
 		svgObject.setAttribute('data', svgFullName );
+		
 	}
 }

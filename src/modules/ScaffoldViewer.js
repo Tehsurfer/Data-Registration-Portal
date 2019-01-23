@@ -15,6 +15,7 @@ var ScaffoldViewer = function()  {
   var _this = this;
   var meshTypesCallbacks = new Array();
   var meshUpdatedCallbacks = new Array();
+  var meshAllPartsDownloadedCallbacks = new Array();
   var availableMeshTypes = undefined;
   this.alertFunction = undefined;
   this.promptFunction = undefined;
@@ -29,40 +30,48 @@ var ScaffoldViewer = function()  {
   var settingsChanged = false;
   _this.typeName = "Scaffold Viewer";
   
-  var registerLandmarks = function(location, label) {
+  var registerLandmarks = function(location, label, predefined) {
     if (!(label == null || label == "")) {
       var geometry = new THREE.SphereGeometry(0.02, 16, 16);
+      var landmarkColor = predefined ? 0xee00ee : 0x00ee00;
+      var emissiveColor = predefined ? 0x550055 : 0x005500;
       var material = new THREE.MeshLambertMaterial({
-        color : 0x00ff00,
-        emissive :0x008800
+        color : landmarkColor,
+        emissive : emissiveColor
       });
       var sphere = new THREE.Mesh(geometry, material);
       sphere.position.copy(location);
       _this.scene.addObject(sphere);
       landmarks.push(sphere);
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = function() {
-              if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                      var xi = JSON.parse(xmlhttp.responseText);
-                      if (xi && xi.element && xi.xi) {
-                        sphere.userData.xi = xi.xi;
-                        sphere.userData.element = xi.element;
-                        sphere.name = label;
-                        meshChanged = true;
-                        //getLandmarksJSON();
-                      }
-              }     
+      if (predefined === false) {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                        var xi = JSON.parse(xmlhttp.responseText);
+                        if (xi && xi.element && xi.xi) {
+                          sphere.userData.xi = xi.xi;
+                          sphere.userData.element = xi.element;
+                          sphere.userData.hoverable = true;
+                          sphere.name = label;
+                          meshChanged = true;
+                          //getLandmarksJSON();
+                        }
+                }     
+        }
+        var requestString = "./registerLandmarks" + "?name=" + label + "&xi1=" + location.x + "&xi2=" + location.y + "&xi3=" + location.z;
+        xmlhttp.open("GET", requestString, true);
+        xmlhttp.send();
+      } else {
+        sphere.name = label;
+        sphere.userData.hoverable = true;
       }
-      var requestString = "./registerLandmarks" + "?name=" + label + "&xi1=" + location.x + "&xi2=" + location.y + "&xi3=" + location.z;
-      xmlhttp.open("GET", requestString, true);
-      xmlhttp.send();
     }
   }
   
   var annotationCallback = function(location) {
     return function(status, label) {
       if (status == true)
-        registerLandmarks(location, label);
+        registerLandmarks(location, label, false);
     }
   }
   
@@ -71,10 +80,32 @@ var ScaffoldViewer = function()  {
     if (label == null || label == "") {
       _this.promptFunction("Please enter the annotation", "Landmark", annotationCallback(location));
     } else {
-      registerLandmarks(location, label);
+      registerLandmarks(location, label, false);
     }
 
     return true;
+  }
+  
+  var addPredefinedLandmarks = function() {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var returnedObject = JSON.parse(xmlhttp.responseText);
+        if (returnedObject["error"] === undefined) {
+          for (var i = 0; i < returnedObject.length;i++) {
+            var datapoint = returnedObject[i];
+            var coords = new THREE.Vector3( datapoint["coordinates"][0], datapoint["coordinates"][1],
+                datapoint["coordinates"][2] );
+            registerLandmarks(coords, datapoint.name, true);
+          }
+        } else {
+          _this.alertFunction(returnedObject['error']);
+        }
+        
+      }
+    }
+    xmlhttp.open("GET", "./getPredefinedLandmarks", true);
+    xmlhttp.send();
   }
   
   var addSphereFromLandmarksData = function(landmarksData) {
@@ -119,10 +150,14 @@ var ScaffoldViewer = function()  {
   
   var importDataDownloadedCompletedCallback = function() {
     return function() {
+      addPredefinedLandmarks();
       if (currentLandmarks) {
         for (var i = 0; i < currentLandmarks.length; i++) {
           addSphereFromLandmarksData(currentLandmarks[i]);
         }
+      }
+      for (var i = 0; i < meshAllPartsDownloadedCallbacks.length;i++) {
+        meshAllPartsDownloadedCallbacks[i]();
       }
       if (csg)
         csg.updatePlane();
@@ -140,7 +175,7 @@ var ScaffoldViewer = function()  {
     landmarks = [];
     var argumentString = "meshtype=" + currentMeshType;
     argumentString = addOptionsToURL(argumentString);
-    var finalURL = "/generator?" + argumentString;
+    var finalURL = "./generator?" + argumentString;
     console.log(argumentString);
     _this.scene.loadMetadataURL(finalURL, itemDownloadCallback, allCompletedCallback);
     meshChanged = true;
@@ -154,7 +189,7 @@ var ScaffoldViewer = function()  {
       currentLandmarks = data.landmarks;
       var argumentString = "meshtype=" + currentMeshType;
       argumentString = addOptionsToURL(argumentString);
-      var finalURL = "/generator?" + argumentString;
+      var finalURL = "./generator?" + argumentString;
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -167,7 +202,7 @@ var ScaffoldViewer = function()  {
           confirmRemesh(_addOrganPartCallback(), importDataDownloadedCompletedCallback());
         }     
       }
-      var finalURL = "/checkMeshTypeOptions?" + argumentString;
+      var finalURL = "./checkMeshTypeOptions?" + argumentString;
       xmlhttp.open("GET", finalURL, true);
       xmlhttp.send();
     } 
@@ -195,7 +230,8 @@ var ScaffoldViewer = function()  {
           verifierEntered(verifier);
         }
       } else {
-        _this.alertFunction("Loading abort");
+        if (_this.alertFunction)
+          _this.alertFunction("Loading abort");
       }
     }
   } 
@@ -205,15 +241,18 @@ var ScaffoldViewer = function()  {
       if (status == true) {
         console.log(url)
         window.open(url,'_blank');
-        _this.promptFunction("Enter your verifier here", "...", verifierEnteredCallback());
+        if (_this.promptFunction)
+          _this.promptFunction("Enter your verifier here", "...", verifierEnteredCallback());
       } else {
-        _this.alertFunction("Loading abort");
+        if (_this.alertFunction)
+          _this.alertFunction("Loading abort");
       }
     }
   }
 
   var verificationCodePrompt = function(url) {
-    _this.confirmFunction("Workspace may be private, please press confirm to identify yourself.", openVerifierPagePressed(url));
+    if (_this.confirmFunction)
+      _this.confirmFunction("Workspace may be private, please press confirm to identify yourself.", openVerifierPagePressed(url));
   } 
 
   var parseWorkspaceResponse = function(options) {
@@ -262,7 +301,8 @@ var ScaffoldViewer = function()  {
           var file = currentFilename;
           if (currentFilename == null || currentFilename == "")
             file = "Please enter file name...";
-          _this.promptFunction("Please enter file name", file, finalReadWorkspacePromptCallback());
+          if (_this.promptFunction)
+            _this.promptFunction("Please enter file name", file, finalReadWorkspacePromptCallback());
         }
       } 
     }
@@ -272,7 +312,8 @@ var ScaffoldViewer = function()  {
     var url = currentWorkspaceURL;
     if (currentWorkspaceURL == null || currentWorkspaceURL == "")
       url = "Enter workspace url...";
-    _this.promptFunction("Please enter PMR workspace", url, readWorkspacePromptCallback());
+    if (_this.promptFunction)
+      _this.promptFunction("Please enter PMR workspace", url, readWorkspacePromptCallback());
 
   }
   
@@ -285,7 +326,7 @@ var ScaffoldViewer = function()  {
             var response = JSON.parse(xmlhttp.responseText);
             if (response.status == "success")
               changesCommitted = true;
-            if (response.message)
+            if (response.message && _this.alertFunction)
               _this.alertFunction(response.message);
           }     
         }
@@ -300,10 +341,12 @@ var ScaffoldViewer = function()  {
     if (meshChanged === true) {
       meshChanged = false;
       var msg = "Commit Message";
-      _this.promptFunction("Please enter commit message", msg, commitWorkspaceCallback());
+      if (_this.promptFunction)
+        _this.promptFunction("Please enter commit message", msg, commitWorkspaceCallback());
     }
     else {
-      _this.alertFunction("Everything is up-to-date");
+      if (_this.alertFunction)
+        _this.alertFunction("Everything is up-to-date");
     }
   }
     
@@ -314,7 +357,7 @@ var ScaffoldViewer = function()  {
         xmlhttp.onreadystatechange = function() {
           if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             var response = JSON.parse(xmlhttp.responseText);
-            if (response.message)
+            if (response.message && _this.alertFunction)
               _this.alertFunction(response.message);
           }     
         }
@@ -327,10 +370,14 @@ var ScaffoldViewer = function()  {
   
   this.pushWorkspace = function() {
     if (changesCommitted) {
-      if (meshChanged)
-        _this.confirmFunction("There are uncommitted changes. Are you sure you want to push the changes?", confirmPushCallback());
-      else
-        _this.confirmFunction("Are you sure you want to push the changes?", confirmPushCallback());
+      if (meshChanged) {
+        if (_this.confirmFunction)
+          _this.confirmFunction("There are uncommitted changes. Are you sure you want to push the changes?", confirmPushCallback());
+      }
+      else {
+        if (_this.confirmFunction)
+          _this.confirmFunction("Are you sure you want to push the changes?", confirmPushCallback());
+      }
     }
   }
   
@@ -345,7 +392,8 @@ var ScaffoldViewer = function()  {
   
   this.updateOption = function(key, value) {
     if (currentOptions) {
-      if (currentOptions[key] && currentOptions[key] != value) {
+      if ((currentOptions[key] !== undefined) && 
+          (currentOptions[key] != value)) {
         currentOptions[key] = value;
         settingsChanged = true;
       }
@@ -385,12 +433,14 @@ var ScaffoldViewer = function()  {
         console.log(response);
         if (response.data) {
           importData(response.data);
-          _this.alertFunction(response.message);
+          if (_this.alertFunction)
+            _this.alertFunction(response.message);
         }
         else if (response.message) {
           settingsChanged = true;
           _this.updateMesh();
-          _this.alertFunction(response.message);
+          if (_this.alertFunction)
+            _this.alertFunction(response.message);
         }
       }
     }
@@ -437,10 +487,13 @@ var ScaffoldViewer = function()  {
       for (var i = 0; i < intersects.length; i++) {
         var currentObject = intersects[i].object;
         //if (intersects[i].object.name && intersects[i].object.name.includes("Element")) {
-        if (currentObject.name && currentObject.userData.xi && currentObject.userData.element) {
-          var displayString = currentObject.name + "<br />{ Element " + 
-            currentObject.userData.element + ", xi: " + currentObject.userData.xi[0] + ", " + 
-            currentObject.userData.xi[1] + ", " + currentObject.userData.xi[2]+"}";
+        if (currentObject.name && currentObject.userData.hoverable) {
+          var displayString = currentObject.name;
+          if (currentObject.userData.xi && currentObject.userData.element) {
+            displayString = displayString + "<br />{ Element " + 
+              currentObject.userData.element + ", xi: " + currentObject.userData.xi[0] + ", " + 
+              currentObject.userData.xi[1] + ", " + currentObject.userData.xi[2]+"}";
+          }
           _this.toolTip.setText(displayString);
           _this.toolTip.show(window_x, window_y);
           return;
@@ -450,6 +503,22 @@ var ScaffoldViewer = function()  {
     }
   };
   
+  /**
+   * Change visibility for parts of the current scene.
+   */
+  var changePartVisibility = function(name, value) {
+    var geometries = _this.scene.findGeometriesWithGroupName(name);
+    for (var i = 0; i < geometries.length; i ++ ) {
+      geometries[i].setVisibility(value);
+    }
+  }
+  
+  this.changePartVisibilityCallback = function(name) {
+    return function(value) {
+      changePartVisibility(name, value);
+    }
+  }
+  
   this.addMeshTypesCallback = function(callback) {
     if (typeof(callback === "function"))
       meshTypesCallbacks.push(callback);
@@ -458,6 +527,11 @@ var ScaffoldViewer = function()  {
   this.addMeshUpdatedCallbacks = function(callback) {
     if (typeof(callback === "function"))
       meshUpdatedCallbacks.push(callback);
+  }
+  
+  this.addMeshAllPartsDownloadedCallbacks = function(callback) {
+    if (typeof(callback === "function"))
+      meshAllPartsDownloadedCallbacks.push(callback);
   }
   
   this.getAvailableMeshTypes = function() {
@@ -475,19 +549,20 @@ var ScaffoldViewer = function()  {
    */
   var initialise = function() {
     _this.initialiseRenderer(undefined);
-    _this.scene = _this.zincRenderer.createScene("scaffold");
-    _this.zincRenderer.setCurrentScene(_this.scene);
-    _this.zincRenderer.getThreeJSRenderer().localClippingEnabled = true;
-    _this.scene.loadViewURL("/static/view.json");
-    //scene.loadViewURL(modelsLoader.getBodyDirectoryPrefix() + "/body_view.json");
-    var directionalLight = _this.scene.directionalLight;
-    directionalLight.intensity = 1.4;
-    var zincCameraControl = _this.scene.getZincCameraControls();
-    zincCameraControl.enableRaycaster(_this.scene, _pickingCallback(), _hoverCallback());
-    zincCameraControl.setMouseButtonAction("AUXILIARY", "ZOOM");
-    zincCameraControl.setMouseButtonAction("SECONDARY", "PAN");
-    csg = new (require('../utilities/csg').csg)(_this.scene, _this.zincRenderer);
-    prepareWorkspace();
+    if (_this.zincRenderer) {
+      _this.scene = _this.zincRenderer.createScene("scaffold");
+      _this.zincRenderer.setCurrentScene(_this.scene);
+      _this.zincRenderer.getThreeJSRenderer().localClippingEnabled = true;
+      _this.scene.loadViewURL("./static/view.json");
+      var directionalLight = _this.scene.directionalLight;
+      directionalLight.intensity = 1.4;
+      var zincCameraControl = _this.scene.getZincCameraControls();
+      zincCameraControl.enableRaycaster(_this.scene, _pickingCallback(), _hoverCallback());
+      zincCameraControl.setMouseButtonAction("AUXILIARY", "ZOOM");
+      zincCameraControl.setMouseButtonAction("SECONDARY", "PAN");
+      csg = new (require('../utilities/csg').csg)(_this.scene, _this.zincRenderer);
+      prepareWorkspace();
+    }
   }
   
   initialise();

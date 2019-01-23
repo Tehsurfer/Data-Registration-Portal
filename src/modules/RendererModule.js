@@ -12,21 +12,15 @@ var RendererModule = function()  {
 
 RendererModule.prototype = Object.create((require('./BaseModule').BaseModule).prototype);
 
-RendererModule.prototype.publishChanges = function(objects, eventType) {
-  var annotations = [];
-  for (var i = 0; i < objects.length; i++) {
-    annotations[i] = objects[i].userData.userData[0];
-  }
-  for (var i = 0; i < this.eventNotifiers.length; i++) {
-    this.eventNotifiers[i].publish(this, eventType, annotations);
-  }
-}
-
 RendererModule.prototype.setHighlightedByObjects = function(objects, propagateChanges) {
   var changed = this.graphicsHighlight.setHighlighted(objects);
   if (changed && propagateChanges) {
     var eventType = require("../utilities/eventNotifier").EVENT_TYPE.HIGHLIGHTED;
-    this.publishChanges(objects, eventType);
+    var annotations = [];
+    for (var i = 0; i < objects.length; i++) {
+      annotations[i] = objects[i].userData.userData[0];
+    }
+    this.publishChanges(annotations, eventType);
   }
   return changed;
 }
@@ -35,7 +29,11 @@ RendererModule.prototype.setSelectedByObjects = function(objects, propagateChang
   var changed = this.graphicsHighlight.setSelected(objects);
   if (changed && propagateChanges) {
     var eventType = require("../utilities/eventNotifier").EVENT_TYPE.SELECTED;
-    this.publishChanges(objects, eventType);
+    var annotations = [];
+    for (var i = 0; i < objects.length; i++) {
+      annotations[i] = objects[i].userData.userData[0];
+    }
+    this.publishChanges(annotations, eventType);
   }
   return changed;
 }
@@ -81,6 +79,33 @@ RendererModule.prototype.viewAll = function() {
   if (this.zincRenderer)
     this.zincRenderer.viewAll();
 }
+
+/**
+ * Start the animation and let the renderer to processs with
+ * time progression
+ */
+RendererModule.prototype.playAnimation = function(flag) {
+  if (this.zincRenderer)
+    this.zincRenderer.playAnimation = flag;
+}
+
+/**
+* Set the speed of playback
+*/
+RendererModule.prototype.setPlayRate = function(value) {
+  if (this.zincRenderer)
+    this.zincRenderer.setPlayRate(value);
+}
+
+/**
+* Get the speed of playback
+*/
+RendererModule.prototype.getPlayRate = function(value) {
+  if (this.zincRenderer)
+    return this.zincRenderer.getPlayRate();
+  else
+    return 0.0;
+}
   
   /** Initialise everything in the renderer, including the 3D renderer,
  *  and picker for the 3D renderer.
@@ -95,9 +120,11 @@ RendererModule.prototype.initialiseRenderer = function(displayAreaIn) {
   if (displayAreaIn) {
     this.displayArea = displayAreaIn;
     this.displayArea.appendChild( this.rendererContainer );
-    this.zincRenderer.animate();
-    if (this.toolTip === undefined)
-      this.toolTip = new (require("../ui/tooltip").ToolTip)(this.displayArea);
+    if (this.zincRenderer) {
+      this.zincRenderer.animate();
+      if (this.toolTip === undefined)
+        this.toolTip = new (require("../ui/tooltip").ToolTip)(this.displayArea);
+    }
   } 
 }
 
