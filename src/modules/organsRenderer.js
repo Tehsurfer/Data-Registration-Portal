@@ -41,7 +41,6 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	var chart = undefined;
 
 	var pickerScene = undefined;
-	var _this.scene = undefined;
 	var defaultScene = undefined;
 	var pickerScene = undefined;
 	var secondaryScene = undefined;
@@ -70,10 +69,6 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	var modelsLoader = ModelsLoaderIn;
 	var _this = this;
 	_this.typeName = "Organs Viewer";
-
-
-	//ZincRenderer for the primary display of model.
-	var _this.zincRenderer = null;
 
 	//Secondary renderer, used for comparing species models.
 	var secondaryRenderer = undefined;
@@ -930,9 +925,9 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	    }
 
 	    // Set display scene for debugging
-	    this._this.scene = _this.scene;
+	    this.displayScene = _this.scene;
 	    //give the display scene to the videotexture so it can add it's video
-	    videoTexture.set_this.scene(_this.scene);
+	    _this.videoTexture.setScene(_this.scene);
 	    loadedTest = setInterval(_allModelsLoaded, 300);
 	  }
 
@@ -1004,10 +999,10 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	 * @async 
 	 */
 	 var initialise = function() {
-	   //addUICallback();
-	   _this.initialiseRenderer(undefined);
-	   if (_this.zincRenderer)
-	     _this.zincRenderer.addPreRenderCallbackFunction(preRenderTimeUpdateCallback());
+	    //addUICallback();
+	    _this.initialiseRenderer(undefined);
+	    if (_this.zincRenderer)
+	     	_this.zincRenderer.addPreRenderCallbackFunction(preRenderTimeUpdateCallback());
      //createNewDialog(require("./snippets/organsViewer.html"));
   }
 	 

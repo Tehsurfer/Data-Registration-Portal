@@ -56,7 +56,7 @@ exports.VideoTexture = function()  {
 	  }
 	}
 
-	this.setDisplayScene = function(scene){
+	this.setScene = function(scene){
 		displayScene = scene;
 	}
 

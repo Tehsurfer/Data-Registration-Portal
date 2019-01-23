@@ -8,6 +8,7 @@ var RendererModule = function()  {
   this.displayArea = undefined;
   this.graphicsHighlight = new (require("../utilities/graphicsHighlight").GraphicsHighlight)();
   this.zincRenderer = null;
+  _this = this;
 }
 
 RendererModule.prototype = Object.create((require('./BaseModule').BaseModule).prototype);
@@ -85,8 +86,11 @@ RendererModule.prototype.viewAll = function() {
  * time progression
  */
 RendererModule.prototype.playAnimation = function(flag) {
-  if (this.zincRenderer)
+  if ( _this.videoTexture !== undefined ){
+      _this.videoTexture.playAnimations(flag);
+  } else if (this.zincRenderer) {
     this.zincRenderer.playAnimation = flag;
+  }
 }
 
 /**
@@ -95,6 +99,9 @@ RendererModule.prototype.playAnimation = function(flag) {
 RendererModule.prototype.setPlayRate = function(value) {
   if (this.zincRenderer)
     this.zincRenderer.setPlayRate(value);
+  if (_this.videoTexture !== undefined ) {
+      _this.videoTexture.setPlayRate(value);
+  }
 }
 
 /**
@@ -125,7 +132,13 @@ RendererModule.prototype.initialiseRenderer = function(displayAreaIn) {
       if (this.toolTip === undefined)
         this.toolTip = new (require("../ui/tooltip").ToolTip)(this.displayArea);
     }
-  } 
+  }
+  if (_this.videoTexture === undefined) {   
+    _this.videoTexture = new (require("./video_texture").VideoTexture)();
+    _this.videoTexture.setOrgansRenderer(this.zincRenderer);
+    }
+  _this.videoTexture.setOrgansRenderer(_this.zincRenderer) 
+  
 }
 
 RendererModule.prototype.destroy = function() {
