@@ -188,8 +188,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 
 
 		//adjust the video time and then 
-		if (videoTexture !== undefined){
-			videoTexture.UpdateTimeFromSlider(value);
+		if (_this.videoTexture !== undefined){
+			_this.videoTexture.UpdateTimeFromSlider(value);
 		}
 
 		if (!sceneData.nerveMapIsActive) {
@@ -214,8 +214,8 @@ var OrgansViewer = function(ModelsLoaderIn)  {
     }
 
     	//Update our video if it is misaligned
-    	if ( videoTexture !== undefined ){
-    		videoTexture.updateTimeIfOff(currentTime);
+    	if ( _this.videoTexture !== undefined ){
+    		_this.videoTexture.updateTimeIfOff(currentTime);
     	}
 
 
