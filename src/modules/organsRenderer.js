@@ -376,7 +376,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 					var id = intersects[ 0 ].object.nameID
 					intersects[ 0 ].object.name = intersects[ 0 ].object.nameID;
 
-					displayArea.style.cursor = "pointer";
+					_this.displayArea.style.cursor = "pointer";
 					if (_this.toolTip !== undefined) {
   	        			_this.toolTip.setText("Node " + id);
   	        			
@@ -393,7 +393,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 					_this.setHighlightedByObjects([intersects[ 0 ].object], true);
 					return;
 				} else if (_this.scene.sceneName.includes("human/Cardiovascular/Arterial")) {
-				  displayArea.style.cursor = "pointer";
+				  _this.displayArea.style.cursor = "pointer";
 				  if (_this.toolTip !== undefined) {
   					_this.toolTip.setText("Click to show vascular model");
   					_this.toolTip.show(window_x, window_y);
@@ -402,7 +402,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 				  return;
 				} else if ((_this.scene.sceneName.includes("human/Cardiovascular/ScaffoldHeart")) ||
 				    (_this.scene.sceneName.includes("human/Cardiovascular/ScaffoldVentricle"))) {
-				  displayArea.style.cursor = "pointer";
+				  _this.displayArea.style.cursor = "pointer";
           if (intersects[ 0 ].object.name) {
             if (_this.toolTip !== undefined) {
               _this.toolTip.setText(intersects[ 0 ].object.name);
