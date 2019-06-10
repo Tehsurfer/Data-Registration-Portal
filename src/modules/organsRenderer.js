@@ -214,8 +214,9 @@ var OrgansViewer = function(ModelsLoaderIn)  {
     }
 
     	//Update our video if it is misaligned
-    	if ( _this.videoTexture !== undefined ){
-    		_this.videoTexture.updateTimeIfOff(currentTime);
+    	if ( _this.videoTexture !== undefined && _this.videoTexture.videoTimeMisaligned(currentTime)){
+			_this.videoTexture.updateTimeIfOff(currentTime);
+			console.log('Resynced video time')
     	}
 
 

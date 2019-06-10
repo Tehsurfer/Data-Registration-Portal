@@ -15,7 +15,7 @@ exports.VideoTexture = function()  {
 
 	var initialise = function(){
 	  	video = document.createElement( 'video' );
-	  	video.src = "models/videos/heartBeatFullHD.mp4";
+	  	video.src = "models/videos/hea.mp4";
 	  	video.load();
 	  	video.loop = true;
 		video.addEventListener('loadeddata', loadedVid);
@@ -83,11 +83,9 @@ exports.VideoTexture = function()  {
 	}
 
 	this.updateTimeIfOff = function(currentTime){
-
-		//Update our video if it is misaligned
-    	if ( video !== undefined && videoTimeMisaligned(currentTime) ){
-    		adjustVideoTime(currentTime);
-    	}
+    	if ( video !== undefined ){
+			adjustVideoTime(currentTime);
+		}
 	}
 
 	var loadedVid = function(){
@@ -146,7 +144,7 @@ exports.VideoTexture = function()  {
 	}
 
 	// videoTimeMisaligned returns true if *currentModelTime* is more than .5% off the video time
-	var videoTimeMisaligned = function(currentModelTime){
+	this.videoTimeMisaligned = function(currentModelTime){
 
 		currentUpdate = new Date().getTime();
 
@@ -166,7 +164,7 @@ exports.VideoTexture = function()  {
 	var adjustVideoTime = function(time) {
 	   	
 	   	//we floor to the frame rate to try and grab the exact time of a frame
-	    video.currentTime = Math.floor(time/modelDuration * video.duration * frameRate)/ frameRate
+	    video.currentTime = time/modelDuration * video.duration
 	    vt.needsUpdate = true;
 	}
 
