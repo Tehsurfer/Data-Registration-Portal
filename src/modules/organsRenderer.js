@@ -934,7 +934,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 
 	  var _allModelsLoaded = function(){
 	  	if (_this.scene !== undefined){
-	  		if ( _this.scene.findGeometriesWithGroupName('ECG projection').length > 0 ){
+	  		if ( _this.scene.findGeometriesWithGroupName('Electrode Projection').length > 0 ){
 	  		document.getElementById('viewerLoadingGif').remove();
 	  		document.getElementById('organsPlayToggle').className = "play";
 	  		document.getElementById('organsPlayToggle').style.visibility = 'visible';

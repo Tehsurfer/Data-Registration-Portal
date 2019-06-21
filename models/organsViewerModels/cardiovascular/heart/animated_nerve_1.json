@@ -1,6 +1,6 @@
 [
    {
-      "GroupName" : "ECG projection",
+      "GroupName" : "Electrode Projection",
       "MorphColours" : true,
       "MorphNormals" : false,
       "MorphVertices" : true,
@@ -25,7 +25,7 @@
    },
    {
       "GlyphGeometriesURL" : "models/organsViewerModels/cardiovascular/heart/picking_node_3.json",
-      "GroupName" : "ECG Nodes",
+      "GroupName" : "Electrodes",
       "MorphColours" : true,
       "MorphNormals" : false,
       "MorphVertices" : true,
