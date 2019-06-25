@@ -16,6 +16,8 @@
 	var times, plot, chart, data, chartOptions, chartData, options, allData;
 	var colours = [];
 	var modelURL;
+	var protocols = ["P1760 IVC Occ", "P1760 RST THR"]
+	var protocol = protocols[0]
 
 	var baseURL = "";
 	
@@ -57,22 +59,21 @@
 
 	// getData() grabs the .json data via an HTTP request and then adds said dataset to the channel drop down box with 
 	// createChannelDropDown
-	function getData(){
+	function getData(protocol){
 
 		var baseRestURL = baseURL;
-
-		getDataCall( baseURL, function childrenCallBack() {
+		getDataCall( baseURL, protocol, function childrenCallBack() {
 			_this.totalTime = times[times.length-1];
 			createChannelDropdown()
 			document.getElementById('select_channel').onchange = addSelectedDataSet;
-			document.getElementById('chartLoadingGif').remove();
+			document.getElementById('chartLoadingGif').style.display = 'none'
 			document.getElementById('OpenCORLinkButton').style = "text-align:center;width:100%;position: relative;visibility: visible;";
 			addSelectedDataSet()
 		});
 
-		function getDataCall(baseRestURL, callback){
-			var APIPath = "./models/data/ecgDataFull.json";
-			var completeRestURL = baseRestURL + APIPath;
+		function getDataCall(baseRestURL, protocol, callback){
+			var APIPath = "./models/data/";
+			var completeRestURL = baseRestURL + APIPath + protocol + ".json";
 			console.log("REST API URL: " + completeRestURL);
 
 			var method = "GET";
@@ -173,6 +174,20 @@
 		select.selectedIndex = parseInt(firstSelection) + 1;
 	}
 
+	function createProtocolDropdown() {
+		var select, i, option;
+
+		select = document.getElementById( 'select_protocol' );
+		$("#select_protocol").empty();
+
+		
+		for (var i in protocols){
+			option = document.createElement( 'option' );
+			option.value = option.text = protocols[i];
+			select.add( option );  
+		}	
+	}
+
 	function createColours() {
 		for (var i = 0; i < 100; i++){
 			colours.push('#'+(Math.random()*0xFFFFFF<<0).toString(16))
@@ -195,7 +210,13 @@
 		createColours();
 		createOpenCORlink();
 		setTimeout(linkCloseButton(), 800);
-		getData();
+		getData(protocol);
+		createProtocolDropdown()
+		document.getElementById('select_protocol').onchange = updateProtocol
+	}
+
+	var updateProtocol = function(){
+		getData(document.getElementById('select_protocol').value)
 
 	}
 
