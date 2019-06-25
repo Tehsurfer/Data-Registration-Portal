@@ -4,9 +4,10 @@
 	pointer-events: none;
 	cursor: pointer;
     z-index: 2;
+	user-select: none;
 }
 
-.tooltip {
+.mptooltip {
 	position: relative;
 	display: inline-block;
 	border-bottom: 1px dotted black;
@@ -14,7 +15,7 @@
     z-index: 2;
 }
 
-.tooltip .tooltiptext {
+.mptooltip .mptooltiptext {
 		font: 500 1em "Lucida Sans Unicode", "Lucida Grande", sans-serif;
     visibility: hidden;
     width: 120px;
@@ -35,7 +36,7 @@
     pointer-events: none;
 }
 
-.tooltip .tooltiptext::after {
+.mptooltip .mptooltiptext::after {
     content: "";
     position: absolute;
     top: 100%;

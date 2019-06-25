@@ -1,10 +1,14 @@
 var ManagerItem = require("./managerItem").ManagerItem;
 var MANAGER_ITEM_CHANGE = require("./managerItem").MANAGER_ITEM_CHANGE;
+var _ = require("lodash/lang");
 
 exports.ModuleManager = function() {
   var ready = false;
   var moduleCounter = 0;
   var name = "Default Manager";
+  var gridView = undefined;
+  var currentSettings = undefined;
+  var fragmentParser = new (require("./fragmentParser").FragmentParser)();
   var constructors = new function() {
     this["Body Viewer"] = [];
     this["Body Viewer"].module = function() {
@@ -12,26 +16,17 @@ exports.ModuleManager = function() {
       module.readSystemMeta();
       return module; 
     }
-    this["Body Viewer"].dialog = function(module) {
-      var dialog = new (require("../ui/BodyViewerDialog").BodyViewerDialog)(module);
-      return dialog; 
+    this["Body Viewer"].dialog = function(module, parent, options) {
+      var dialog = new (require("../ui/BodyViewerDialog").BodyViewerDialog)(module, parent, options);
+      return dialog;
     }
     this["Organs Viewer"] = [];
-    this["Organs Viewer"].module =  function() {
+    this["Organs Viewer"].module = function() {
       var module = new (require("../modules/organsRenderer").OrgansViewer)(modelsLoader);
       return module; 
     }
-    this["Organs Viewer"].dialog=  function(module) {
-      var dialog = new (require("../ui/OrgansViewerDialog").OrgansViewerDialog)(module);
-      return dialog; 
-    }
-    this["Model Panel"] = [];
-    this["Model Panel"].module =  function() {
-      var module = new (require("../modules/model_panel").ModelPanel)();
-      return module; 
-    }
-    this["Model Panel"].dialog=  function(module) {
-      var dialog = new (require("../ui/ModelViewerDialog").ModelViewerDialog)(module);
+    this["Organs Viewer"].dialog = function(module, parent, options) {
+      var dialog = new (require("../ui/OrgansViewerDialog").OrgansViewerDialog)(module, parent, options);
       return dialog; 
     }
     this["Scaffold Viewer"] = [];
@@ -39,18 +34,34 @@ exports.ModuleManager = function() {
       var module = new (require("../modules/ScaffoldViewer").ScaffoldViewer)();
       return module; 
     }
-    this["Scaffold Viewer"].dialog = function(module) {
-      var dialog = new (require("../ui/ScaffoldDialog").ScaffoldDialog)(module);
+    this["Scaffold Viewer"].dialog = function(module, parent, options) {
+      var dialog = new (require("../ui/ScaffoldDialog").ScaffoldDialog)(module, parent, options);
       return dialog; 
     }
   };
   var modelsLoader = undefined;
   var itemChangedCallbacks = [];
   var renameCallbacks = [];
+  this.allowStateChange = false;
   var managerItems = [];
   var eventNotifier = new (require("./eventNotifier").EventNotifier)();
-  var suscription = undefined;
+  var subscription = undefined;
+  var importing = false;
   var _this = this;
+
+  this.addConstructor = function(name, moduleConstructor, dialogConstructor) {
+	  if(!constructors.hasOwnProperty(name)) {
+		constructors[name] = [];
+		constructors[name].module = function() {
+		  var module = new moduleConstructor();
+		  return module;
+		}
+		constructors[name].dialog = function(module, parent, options) {
+		  var dialog = new dialogConstructor(module, parent, options);
+		  return dialog;
+		}
+	  }
+  }
 
   this.getAllManagerItems = function() {
     return managerItems.slice();
@@ -90,6 +101,16 @@ exports.ModuleManager = function() {
     }
     return undefined;
   }
+  
+  var findManagerItemWithDialog = function(dialogIn) {
+	for (var i = 0; i < managerItems.length; i++) {
+	  var dialog = managerItems[i].getDialog();
+	  if (dialog === dialogIn) {
+	    return managerItems[i];
+	  }
+	}
+	return undefined;
+  }
 
   var pad = function(number, width) {
     var n = number + '';
@@ -105,45 +126,85 @@ exports.ModuleManager = function() {
 
   var dialogDestroyCallback = function() {
     return function(dialog) {
-      _this.removeDialog(dialog);
+    	_this.removeDialog(dialog);
     }
   }
 
   this.manageDialog = function(dialogIn) {
     if (dialogIn) {
       var moduleIn = dialogIn.getModule();
-      var item = findManagerItemWithModule(moduleIn);
-      if (item) {
-        if (item.getDialog() === undefined) {
-          item.setDialog(dialogIn);
-          dialogIn.addBeforeCloseCallback(dialogDestroyCallback());
-        }
-        return item;
-      }
-      //item not found, add a new entry
+      var item = undefined;
       if (moduleIn) {
-        var managerItem = new ManagerItem();
-        managerItem.setDialog(dialogIn);
-        dialogIn.addBeforeCloseCallback(dialogDestroyCallback());
-        moduleIn.addChangedCallback(moduleChangedCallback());
-        managerItems.push(managerItem);
-        for (var i = 0; i < itemChangedCallbacks.length; i++)
-          itemChangedCallbacks[i](managerItem, MANAGER_ITEM_CHANGE.ADDED)
-        return managerItem;
+	    item = findManagerItemWithModule(moduleIn);
+	    if (item) {
+	      if (item.getDialog() === undefined) {
+	        item.setDialog(dialogIn);
+	        dialogIn.addBeforeCloseCallback(dialogDestroyCallback());
+	      }
+	    } else {
+	      var managerItem = new ManagerItem();
+	      managerItem.setDialog(dialogIn);
+	      dialogIn.addBeforeCloseCallback(dialogDestroyCallback());
+	      moduleIn.addChangedCallback(moduleChangedCallback());
+	      managerItems.push(managerItem);
+	      for (var i = 0; i < itemChangedCallbacks.length; i++)
+	        itemChangedCallbacks[i](managerItem, MANAGER_ITEM_CHANGE.ADDED)
+	      item = managerItem;
+	    }
+      } else {
+    	item = findManagerItemWithDialog(dialogIn);
+    	if (item === undefined) {
+  	      var managerItem = new ManagerItem();
+	      managerItem.setDialog(dialogIn);
+	      dialogIn.addBeforeCloseCallback(dialogDestroyCallback());
+	      managerItems.push(managerItem);
+	      for (var i = 0; i < itemChangedCallbacks.length; i++)
+	        itemChangedCallbacks[i](managerItem, MANAGER_ITEM_CHANGE.ADDED)
+	      item = managerItem;
+    	}
       }
+      //if gridVIew is defined and enabled, the dialog will be added to a grid
+      if (item && gridView) {
+    	  gridView.addManagerItem(item);
+      }
+      updateState();
     }
   }
 
   this.removeDialog = function(dialogIn) {
     if (dialogIn) {
-      for (var i = 0; i < managerItems.length; i++) {
-        var dialog = managerItems[i].getDialog();
-        if (dialog === dialogIn) {
-          managerItems[i].setDialog(undefined);
-          return;
-        }
+      var item = findManagerItemWithDialog(dialogIn);
+      if (item) {
+    	  if (gridView)
+    		  gridView.removeManagerItem(item);
+    	  item.setDialog(undefined);
       }
     }
+  }
+  
+  this.getSettings = function() {
+	  var settings = [];
+      for (var i = 0; i < managerItems.length; i++) {
+          var newSettings = managerItems[i].getSettings();
+          if (newSettings) {
+        	  settings.push(newSettings);
+          }
+      }
+	  return settings;
+  }
+  
+  this.serialise = function() {
+	  var settings = _this.getSettings();
+	  var string = fragmentParser.stringify(settings);
+      return string;
+  }
+  
+  var updateState = function() {
+	  if ((importing == false) && _this.allowStateChange && (self.history !== undefined)) {
+		  var serialisation = _this.serialise();
+		  if ((self.location !== undefined) && (self.location.hash != serialisation))
+			  self.history.pushState({}, "Portal Manager State", serialisation);
+	  }
   }
 
   var moduleChangedCallback = function() {
@@ -153,9 +214,10 @@ exports.ModuleManager = function() {
       else if (change === require("../modules/BaseModule").MODULE_CHANGE.NAME_CHANGED) {
         var item = findManagerItemWithModule(module);
         if (item)
-          for (var i = 0; i < itemChangedCallbacks.length; i++) {
+          for (var i = 0; i < itemChangedCallbacks.length; i++)
             itemChangedCallbacks[i](item, MANAGER_ITEM_CHANGE.NAME_CHANGED);
-          }
+      } else if (change === require("../modules/BaseModule").MODULE_CHANGE.SETTINGS_CHANGED) {
+    	  updateState();
       }
     }
   }
@@ -176,6 +238,7 @@ exports.ModuleManager = function() {
       managerItems.push(managerItem);
       for (var i = 0; i < itemChangedCallbacks.length; i++)
         itemChangedCallbacks[i](managerItem, MANAGER_ITEM_CHANGE.ADDED);
+      //updateState();
       return managerItem;
     }
   }
@@ -190,11 +253,17 @@ exports.ModuleManager = function() {
       }
       if (index > -1) {
         moduleIn.removeChangedCallback(moduleChangedCallback());
-        managerItems[index].getDialog().removeBeforeCloseCallback(dialogDestroyCallback());
-        for (var i = 0; i < itemChangedCallbacks.length; i++) {
-          itemChangedCallbacks[i]( managerItems[index], MANAGER_ITEM_CHANGE.REMOVED);
+        var dialog = managerItems[index].getDialog();
+        if (dialog) {
+        	dialog.removeBeforeCloseCallback(dialogDestroyCallback());
+        	dialog.close();
+        } else {
+	        for (var i = 0; i < itemChangedCallbacks.length; i++) {
+	        	itemChangedCallbacks[i]( managerItems[index], MANAGER_ITEM_CHANGE.REMOVED);
+	        }
+	        managerItems.splice(index, 1);
         }
-        managerItems.splice(index, 1);
+        updateState();
       }
     }
   }
@@ -204,11 +273,12 @@ exports.ModuleManager = function() {
       itemChangedCallbacks.push(callback);
   }
   
-  this.createDialog = function(module) {
+  this.createDialog = function(module, parent) {
     if (module && ready) {
       if (constructors[module.typeName]) {
-        var dialog = constructors[module.typeName].dialog(module);
+        var dialog = constructors[module.typeName].dialog(module, parent);
         _this.manageDialog(dialog);
+        dialog.destroyModuleOnClose = true;
         return dialog;
       }
     }
@@ -238,14 +308,15 @@ exports.ModuleManager = function() {
   this.createModule = function(moduleName) {
     if (modelsLoader && ready) {
       var module = constructors[moduleName].module();
-      moduleCounter = moduleCounter + 1;
-      var name = pad(moduleCounter, 4);
-      module.setName(name);
-      _this.manageModule(module);
+      if (module) {
+	      moduleCounter = moduleCounter + 1;
+	      var name = pad(moduleCounter, 4);
+	      module.setName(name);
+	      _this.manageModule(module);
+      }
       return module;
     }
     return;
-    
   }
   
   var eventNotifierCallback = function() {
@@ -265,12 +336,146 @@ exports.ModuleManager = function() {
   }
   
   this.destroy = function() {
-    if (eventNotifier && suscription)
-      eventNotifier.unsuscribe(suscription);
+    if (eventNotifier && subscription)
+      eventNotifier.unsubscribe(subscription);
   }
 
   this.isReady = function() {
     return ready;
+  }
+  
+  this.initialiseGridView = function(container) {
+	  if (gridView === undefined)
+		  gridView = new (require("../ui/gridView").GridView)(container);
+  }
+  
+  this.setGridHeight = function(height) {
+	  if (gridView) {
+		  gridView.setHeight(height);
+	  }
+  }
+  
+  this.enableGridView = function() {
+	  if (gridView) {
+		  gridView.enable(managerItems);
+	  }
+  }
+  
+  this.disableGridView = function() {
+	  if (gridView) {
+		  gridView.disable();
+	  }
+  }
+  
+  var findFirstModuleWithExactSettings = function(setting, remainingItems) {
+	  var copyItems = remainingItems.slice();
+	  for (var i = 0; i < copyItems.length; i++) {
+		  var item = copyItems[i];
+		  var currentSettings = item.getSettings();
+		  if (_.isEqual(setting, currentSettings)) {
+			  return [true, i];
+		  }
+	  }
+	  return [false, -1];
+  }
+  
+  var findFirstModuleWithMatchingType = function(setting, remainingItems) {
+	  var copyItems = remainingItems.slice();
+	  for (var i = 0; i < copyItems.length; i++) {
+		  var item = copyItems[i];
+		  var currentSettings = item.getSettings();
+		  if (_.isEqual(setting.dialog, currentSettings.dialog)) {
+			  return [true, i];
+		  }
+	  }
+	  return [false, -1];
+  }
+  
+  var createModulesFromSettings = function(settings) {
+	  if (settings) {
+		  var module = _this.createModule(settings.dialog);
+		  if (module) {
+			  module.importSettings(settings);
+			  if (document && document.querySelector) {
+				  var parent = undefined;
+				  if (settings.parent)
+					  parent = document.querySelector(settings.parent);
+				  else
+					  parent = document.querySelector("body");
+				  _this.createDialog(module, parent);
+			  }
+		  }
+	  } 
+  }
+  
+  this.importSettings = function(settings) {
+	  if (settings) {
+		  importing = true;
+		  // The following block should leave any non changed module alone
+		  var copySettings = settings.slice();
+		  var remainingItems = managerItems.slice();
+		  for (var i = 0; i < copySettings.length;) {
+			  var setting = copySettings[i];
+			  var returned = findFirstModuleWithExactSettings(setting, remainingItems);
+			  if (returned[0]) {
+				  remainingItems.splice(returned[1], 1);
+				  copySettings.splice(i, 1);
+			  } else {
+				  i++;
+			  }
+		  }
+		  // Find the first matching module type and deserialise 
+		  for (var i = 0; i < copySettings.length;) {
+			  var setting = copySettings[i];
+			  var returned = findFirstModuleWithMatchingType(setting, remainingItems);
+			  if (returned[0]) {
+				  var module = remainingItems[returned[1]].getModule();
+				  module.importSettings(setting);
+				  remainingItems.splice(returned[1], 1);
+				  copySettings.splice(i, 1);
+			  } else {
+				  i++;
+			  }
+		  }
+		  // These modules are no longer required
+		  if (remainingItems.length > 0 ) {
+			  for (var i = remainingItems.length - 1; i >= 0; i--) {
+				  var module = remainingItems[i].getModule();
+				  _this.removeModule(module);
+			  }
+		  }
+		  //create missing modules
+		  for (var i = 0; i < copySettings.length; i++) {
+			  createModulesFromSettings(copySettings[i]);
+		  }
+		  var serialisation = _this.serialise();
+		  if ((self.location !== undefined) && (self.location.hash != serialisation))
+			  self.history.replaceState({}, "Portal Manager State", serialisation);
+		  importing = false;
+	  }
+  }
+  
+  this.deserialise = function(hash) {
+	  var settings = fragmentParser.parseString(hash);
+	  _this.importSettings(settings);
+  }
+  
+  var hashChangedCallback = function() {
+	  if (self.location !== undefined) {
+		  var settings = fragmentParser.parse(self.location);
+		  _this.importSettings(settings);
+	  }
+  }
+  
+  this.enableHashChangedEvent = function() {
+	  if (self && self.addEventListener && self.onhashchange == undefined) {
+		  self.onhashchange = hashChangedCallback;
+	  }
+  }
+  
+  this.disableHashChangedEvent = function() {
+	  if (self && self.onhashchang)
+		  self.onhashchange = undefined;
   }
 
   var systemMetaReadyCallback = function() {
@@ -283,7 +488,7 @@ exports.ModuleManager = function() {
     modelsLoader = new (require("../modelsLoader").ModelsLoader)();
     modelsLoader.addSystemMetaIsReadyCallback(systemMetaReadyCallback());
     modelsLoader.initialiseLoading();
-    suscription = eventNotifier.suscribe(_this, eventNotifierCallback(), undefined);
+    subscription = eventNotifier.subscribe(_this, eventNotifierCallback(), undefined);
   }
 
   initialise();

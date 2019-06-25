@@ -1,5 +1,7 @@
+require("../styles/sidebar.css");
+
 var SidebarItemArray = function() {
-  var array = new Object();;
+  var array = new Object();
   var _this = this;
 
   this.push = function(name, managerItem, element) {
@@ -86,7 +88,8 @@ var ManagerElement = function(manager, jelemIn) {
         addDialog.data("manager", moduleManager);
         dialog_selection.val("Please pick one");
         addDialog.find("#dialog_name")[0].value = "";
-        addDialog.dialog("open"); 
+        addDialog.dialog("moveToTop");
+        addDialog.dialog("open");
       }
     }
   }
@@ -119,6 +122,7 @@ var ManagerElement = function(manager, jelemIn) {
         renameDialog.data("managerItem", managerItem);
         var nameElem = renameDialog.find("#new_name");
         nameElem[0].value = managerItem.getModule().getName();
+        renameDialog.dialog("moveToTop");
         renameDialog.dialog("open");
       }
     }
@@ -201,16 +205,23 @@ var ManagerSidebar = function(parentIn) {
   var addManagerDialog = undefined;
   var messageDialog = undefined;
   var ManagerElementArray = [];
+  var feedbackCallback = undefined;
   var _this = this;
 
   this.open = function() {
-    sidebarEle.style.display = "block";
+    //sidebarEle.style.display = "block";
+    sidebarEle.className = sidebarEle.className.replace(" leftHide", " leftShow");
     jelem.find("#sidebarOpen")[0].style.display = "none";
   }
 
   this.close = function() {
-    sidebarEle.style.display = "none";
+    //sidebarEle.style.display = "none";
+	sidebarEle.className = sidebarEle.className.replace(" leftShow", " leftHide");
     jelem.find("#sidebarOpen")[0].style.display = "block";
+  }
+  
+  this.showProfileSelect = function() {
+	  jelem.find("#profileSelect")[0].style.display = "block";
   }
   
   this.setWidth = function(widthIn) {
@@ -228,6 +239,8 @@ var ManagerSidebar = function(parentIn) {
     };
     element = jelem.find("#addManager")[0];
     element.onclick = addManagerClicked();
+    element = jelem.find("#Feedback")[0];
+    element.onclick = feedbackClicked();
   }
   
   var addDialogCallback = function() {
@@ -237,12 +250,13 @@ var ManagerSidebar = function(parentIn) {
     var moduleManager = addDialog.data("manager");
     if ((dialogName !== "Please pick one") && name !== "") {
       var module = moduleManager.createModule(dialogName);
-      module.setName(name);
-      var dialog = moduleManager.createDialog(module);
+      if (module)
+    	  module.setName(name);
+      var dialog = moduleManager.createDialog(module, parent);
       dialog.destroyModuleOnClose = true;
-      moduleManager.manageDialog(dialog);
       addDialog.dialog("close");
     } else {
+      messageDialog.dialog("moveToTop");
       messageDialog.dialog("open");
     }
   }
@@ -255,6 +269,7 @@ var ManagerSidebar = function(parentIn) {
       _this.addManager(manager);
       addManagerDialog.dialog("close");
     } else {
+      messageDialog.dialog("moveToTop");
       messageDialog.dialog("open");
     }
   } 
@@ -264,10 +279,25 @@ var ManagerSidebar = function(parentIn) {
       event.stopPropagation();
       if (addManagerDialog) {
         addManagerDialog.find("#manager_name")[0].value = "";
-        addManagerDialog.dialog("open"); 
+        addManagerDialog.dialog("moveToTop");
+        addManagerDialog.dialog("open");
       }
     }
   }
+  
+  this.setFeedbackClickedCallback = function(callback) {
+	  feedbackCallback = callback;
+  }
+  
+  var feedbackClicked = function() {
+    return function(event) {
+      event.stopPropagation();
+      if (feedbackCallback) {
+    	  feedbackCallback();
+      }
+    }
+  }
+	  
   
   var renameDialogCallback = function() {
     var nameElem = renameDialog.find("#new_name")[0];
@@ -285,10 +315,12 @@ var ManagerSidebar = function(parentIn) {
     sidebarEle = jelem.find("#managerSidebar")[0];
     var renameElem = jelem.find("#rename-form");
     renameDialog = renameElem.dialog({
+      appendTo: parent,
       autoOpen : false,
       height : 300,
       width : 400,
       resizable : false,
+      position: { my: "center", at: "center", of: parent},
       modal : true,
       buttons : {
         "Rename" : renameDialogCallback,
@@ -300,12 +332,17 @@ var ManagerSidebar = function(parentIn) {
         renameDialog.dialog("close");
       }
     });
+    renameElem.parent().draggable({
+    	  containment: parent
+      });
     
     var addManagerDialogElem = jelem.find("#add-manager-form");
     addManagerDialog = addManagerDialogElem.dialog({
+      appendTo: parent,
       autoOpen : false,
       width : 400,
       resizable : false,
+      position: { my: "center", at: "center", of: parent},
       modal : true,
       buttons : {
         "Confirm" : addManagerDialogCallback,
@@ -317,13 +354,18 @@ var ManagerSidebar = function(parentIn) {
         addManagerDialog.dialog("close");
       }
     });
+    addManagerDialogElem.parent().draggable({
+  	  containment: parent
+    });
    
     var addDialogElem = jelem.find("#add-dialog-form");
     addDialog = addDialogElem.dialog({
+      appendTo: parent,
       autoOpen : false,
       height : 300,
       width : 400,
       resizable : false,
+      position: { my: "center", at: "center", of: parent},
       modal : true,
       buttons : {
         "Confirm" : addDialogCallback,
@@ -335,15 +377,24 @@ var ManagerSidebar = function(parentIn) {
         addDialog.dialog("close");
       }
     });
+    addDialogElem.parent().draggable({
+    	  containment: parent
+    });
     
     var messageDialogElem = jelem.find("#message-dialog");
     messageDialog = messageDialogElem.dialog({
+      appendTo: parent,
       autoOpen : false,
       resizable : false,
+      position: { my: "center", at: "center", of: parent},
       modal : true
+    });
+    messageDialogElem.parent().draggable({
+  	  containment: parent
     });
     
     addUICallback();
+
   }
   
   this.addManager = function(manager) {

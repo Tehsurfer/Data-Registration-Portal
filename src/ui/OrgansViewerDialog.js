@@ -1,7 +1,15 @@
-var OrgansViewerDialog = function(organsViewerIn) {
+require("../styles/my_styles.css");
+
+var OrgansViewerDialog = function(organsViewerIn, parentIn, options) {
   (require('./BaseDialog').BaseDialog).call(this);
+  this.parent = parentIn;
+  this.containment = parentIn;
+  if (options !== undefined) {
+	  if (options.containment !== undefined)
+		  this.containment = options.containment;
+  }
   var sceneData = undefined;
-  var organsViewer = organsViewerIn;
+  this.module = organsViewerIn;
   var organPartsGui = undefined;
   var speedSlider = undefined;
   var timeSlider = undefined;
@@ -17,11 +25,6 @@ var OrgansViewerDialog = function(organsViewerIn) {
   var toolTip = undefined;
   var _myInstance = this;
 
-  
-  this.getModule = function() {
-    return organsViewer;
-  }
-  
   // data used by dat.gui to control non-model specific controls. 
   var organsControl = function() {
       this.Background = [ 255, 255, 255 ]; // RGB array
@@ -57,7 +60,7 @@ var OrgansViewerDialog = function(organsViewerIn) {
       element = _myInstance.container.find("#organsSecondaryDisplayRenderer")[0];
       element.style.display = "block";
       var secondDisplayRenderer = _myInstance.container.find("#organsSecondaryDisplayRenderer")[0];
-      organsViewer.initialiseSecondaryRenderer(secondDisplayRenderer);
+      _myInstance.module.initialiseSecondaryRenderer(secondDisplayRenderer);
     } else if (nerveMapIsActive) {
       var element = _myInstance.container.find("#organsDisplayArea")[0];
       element.style.width = "100%";
@@ -116,24 +119,25 @@ var OrgansViewerDialog = function(organsViewerIn) {
   var speedSliderChanged = function() {
     return function(value) {
       organsViewer.setPlayRate(value*30);
+      _myInstance.module.setPlayRate(value);
     }
   }
 
   var updateSpeedSlider = function() {
-    var playRate = organsViewer.getPlayRate();
+    var playRate = _myInstance.module.getPlayRate();
     organGuiControls.Speed = playRate;
     speedSlider.updateDisplay();  
   }
   
   var texSliderChanged = function() {
-    organsViewer.setTexturePos(texSlider.value);
+    _myInstance.module.setTexturePos(texSlider.value);
   }
   
   /**
    * Used to update internal timeer in scene when time slider has changed.
    */
   var timeSliderChanged = function() {
-    organsViewer.updateTime(timeSlider.value);
+    _myInstance.module.updateTime(timeSlider.value);
   }
   
   var timeChangedCallback = function() {
@@ -145,10 +149,10 @@ var OrgansViewerDialog = function(organsViewerIn) {
   var playPauseAnimation = function(element) {
     if (element.className == "play") {
       element.className = "pause";
-      organsViewer.playAnimation(true);
+      _myInstance.module.playAnimation(true);
     } else {
       element.className = "play";
-      organsViewer.playAnimation(false);
+      _myInstance.module.playAnimation(false);
     }
   }
   
@@ -159,7 +163,7 @@ var OrgansViewerDialog = function(organsViewerIn) {
       var blueValue = parseInt(value[2]);
       var backgroundColourString = 'rgb(' + redValue + ',' + greenValue + ',' + blueValue + ')';
       _myInstance.container.find("#organsSecondaryDisplayArea")[0].style.backgroundColor = backgroundColourString;
-      organsViewer.changeBackgroundColour(backgroundColourString);
+      _myInstance.module.changeBackgroundColour(backgroundColourString);
     }
   }
   
@@ -168,13 +172,13 @@ var OrgansViewerDialog = function(organsViewerIn) {
    */
   var changeDataGeometryVisibility = function() {
     return function(value) {
-      organsViewer.updateDataGeometryVisibility(value);
+      _myInstance.module.updateDataGeometryVisibility(value);
     }
   }
   
   var toggleFieldVisibility = function(dataFields) {
     return function(value) {
-      organsViewer.updateFieldvisibility(dataFields, value);
+      _myInstance.module.updateFieldvisibility(dataFields, value);
       
     }
   }
@@ -208,15 +212,15 @@ var OrgansViewerDialog = function(organsViewerIn) {
           toggleFieldVisibility(sceneData.dataFields));
     }
     if (sceneData.nerveMap) {
-      var nerveMapButton = { 'Toggle nerve':function(){ organsViewer.changeNerveMapVisibility() }};
+      var nerveMapButton = { 'Toggle nerve':function(){ _myInstance.module.changeNerveMapVisibility() }};
       organPartsGui.add(nerveMapButton, 'Toggle nerve');
     }
-    var otherSpecies = organsViewer.getAvailableSpecies(sceneData.currentSpecies,
+    var otherSpecies = _myInstance.module.getAvailableSpecies(sceneData.currentSpecies,
       sceneData.currentSystem, sceneData.currentPart);
     if (otherSpecies.length > 1) {
       organPartGuiControls["Compare With"] = "none";
       var compareSelected = organPartsGui.add(organPartGuiControls, 'Compare With', otherSpecies);
-      compareSelected.onChange(function(species) { organsViewer.changeCompareSpecies(species); } );
+      compareSelected.onChange(function(species) { _myInstance.module.changeCompareSpecies(species); } );
     }
         
     var element = _myInstance.container.find("#texSlider")[0];
@@ -247,7 +251,7 @@ var OrgansViewerDialog = function(organsViewerIn) {
     return function(event) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      organsViewer.setSelectedByGroupName(groupName, true);
+      _myInstance.module.setSelectedByGroupName(groupName, true);
     } 
   }
   
@@ -265,11 +269,11 @@ var OrgansViewerDialog = function(organsViewerIn) {
         organPartGuiControls[groupName] = true;
         var controller = organPartsGui.add(organPartGuiControls, groupName);
         var span = controller.__li.getElementsByTagName("span")[0];
-        controller.onChange(organsViewer.changeOrganPartsVisibilityCallback(groupName));
-        controller.__li.onmouseover = function() {organsViewer.setHighlightedByGroupName(groupName, true);};
+        controller.onChange(_myInstance.module.changeOrganPartsVisibilityCallback(groupName));
+        controller.__li.onmouseover = function() {_myInstance.module.setHighlightedByGroupName(groupName, true);};
         span.onclick = organsPartNameClickedCallback(groupName);
       }
-      /* controls are hidden when organsViewer update the scene. 
+      /* controls are hidden when _myInstance.module update the scene. 
        * Reenabling it when a geometry is time varying.
        * */
       if (timeVarying)
@@ -319,16 +323,7 @@ var OrgansViewerDialog = function(organsViewerIn) {
     _myInstance.datGui.add(viewAllButton, 'View All');
     organPartsGui = _myInstance.datGui.addFolder('Visibility Control');
     organPartsGui.open();
-    updateOrganSpecificGui(organsViewer.getSceneData());
-  }
-  
-  var _organsViewerDialogClose = function() {
-    return function(myDialog) {
-      if (_myInstance.destroyModuleOnClose) {
-        organsViewer.destroy();
-        organsViewer = undefined;
-      }
-    }
+    updateOrganSpecificGui(_myInstance.module.getSceneData());
   }
   
   var organsViewerChangedCallback = function() {
@@ -340,19 +335,20 @@ var OrgansViewerDialog = function(organsViewerIn) {
   }
 
   var initialise = function() {
-    if (organsViewer) {
+    if (_myInstance.module) {
       _myInstance.create(require("../snippets/organsViewer.html"));
-      var name = organsViewer.getName();
+      var name = _myInstance.module.getName();
       _myInstance.setTitle(name);
       initialiseOrgansControlUI();
       var displayArea = _myInstance.container.find("#organsDisplayArea")[0];
-      organsViewer.initialiseRenderer(displayArea);
-      organsViewer.addTimeChangedCallback(timeChangedCallback());
-      organsViewer.addSceneChangedCallback(sceneChangedCallback());
-      organsViewer.addOrganPartAddedCallback(organPartAddedCallback());
-      organsViewer.addChangedCallback(organsViewerChangedCallback());
-      organsViewer.addLayoutUpdateRequiredCallback(layoutUpdateRequiredCallback());
-      _myInstance.onCloseCallbacks.push(_organsViewerDialogClose());
+      _myInstance.module.initialiseRenderer(displayArea);
+      _myInstance.module.addTimeChangedCallback(timeChangedCallback());
+      _myInstance.module.addSceneChangedCallback(sceneChangedCallback());
+      _myInstance.module.addOrganPartAddedCallback(organPartAddedCallback());
+      _myInstance.module.addChangedCallback(organsViewerChangedCallback());
+      _myInstance.module.addLayoutUpdateRequiredCallback(layoutUpdateRequiredCallback());
+      var snackbar = _myInstance.getSnackbar();
+      _myInstance.module.setMessageFunction(snackbar.showMessage);
     }
   }
   

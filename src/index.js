@@ -1,17 +1,18 @@
 //require("./styles/bootstrap.min.css");
 require("./styles/w3.css");
-require("./styles/sidebar.css");
 require('./styles/bootstrap.min.css');
+require("polyfill-array-includes");
 
+exports.BaseModule = require("./modules/BaseModule").BaseModule;
 exports.BodyViewer = require("./modules/bodyRenderer").BodyViewer;
 exports.RendererModule = require("./modules/RendererModule").RendererModule;
-exports.CellPanel = require("./cell_panel").CellPanel;
+//exports.CellPanel = require("./cell_panel").CellPanel;
 exports.ModelsLoader = require("./modelsLoader").ModelsLoader;
-exports.ModelPanel = require("./modules/model_panel").ModelPanel;
-exports.ModelViewerDialog = require("./ui/ModelViewerDialog").ModelViewerDialog;
+//exports.ModelPanel = require("./modules/model_panel").ModelPanel;
+//exports.ModelViewerDialog = require("./ui/ModelViewerDialog").ModelViewerDialog;
 exports.OrgansViewer = require("./modules/organsRenderer").OrgansViewer;
 exports.ScaffoldViewer = require("./modules/ScaffoldViewer").ScaffoldViewer;
-exports.TissueViewer = require("./tissueRenderer").TissueViewer;
+//exports.TissueViewer = require("./tissueRenderer").TissueViewer;
 exports.BaseDialog = require("./ui/BaseDialog").BaseDialog;
 exports.OrgansViewerDialog = require("./ui/OrgansViewerDialog").OrgansViewerDialog;
 exports.ScaffoldDialog = require("./ui/ScaffoldDialog").ScaffoldDialog;
@@ -24,6 +25,7 @@ exports.MANAGER_ITEM_CHANGE = require("./utilities/managerItem").MANAGER_ITEM_CH
 exports.MODULE_CHANGE = require("./modules/BaseModule").MODULE_CHANGE;
 exports.ElectrodePanel = require("./modules/electrode_panel").ElectrodePanel;
 exports.Main = require("../simple_heart.js").Main;
+exports.FragmentParser = require("./utilities/fragmentParser").FragmentParser;
 //exports.ChartDialog = require("./ui/ChartDialog").ChartDialog;
 //exports.CellPanelDialog = require("./ui/CellPanelDialog").CellPanelDialog;
 exports.VERSION = '0.2.0';
