@@ -336,6 +336,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 				if (_this.scene.sceneName == "human/Cardiovascular/Heart") {
 					var id = intersects[ 0 ].object.nameID
 					intersects[ 0 ].object.name = intersects[ 0 ].object.nameID;
+					console.log(id)
 
 					_this.displayArea.style.cursor = "pointer";
 					if (_this.toolTip !== undefined) {
@@ -909,7 +910,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	              var pickerSceneName = name + "_picker_scene";
 	              pickerScene = _this.zincRenderer.createScene(pickerSceneName);
 	              pickerScene.loadMetadataURL(modelsLoader.getOrgansDirectoryPrefix() + "/" + organsDetails.picker);
-	              zincCameraControl.enableRaycaster(pickerScene, _pickingCallback(), _hoverCallback());
+	              zincCameraControl.enableRaycaster(pickerScene, _pickingCallback, _hoverCallback);
 	            } else {
 	              zincCameraControl.enableRaycaster(organScene, _pickingCallback(), _hoverCallback());
 	            }

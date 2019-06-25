@@ -229,7 +229,7 @@
 
 		initialiseElectrodePanel();
 		UIIsReady = true;
-		delete link;
+		
 	}
 	
 	var initialise = function() {

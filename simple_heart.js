@@ -39,7 +39,7 @@ Main = function()  {
     var organsViewerDialog = new physiomeportal.OrgansViewerDialog(this.organsViewer);
     var eventNotifier =  new physiomeportal.EventNotifier();
     organsViewer.addNotifier(eventNotifier);
-    eventNotifier.suscribe(this, selectionCallback());
+    eventNotifier.subscribe(this, selectionCallback());
     organsViewer.loadOrgans("human", "Cardiovascular", "Heart");
     organsViewerDialog.setWidth("90%");
     organsViewerDialog.setHeight("90%");
