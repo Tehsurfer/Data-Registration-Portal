@@ -313,10 +313,18 @@ var OrgansViewerDialog = function(organsViewerIn) {
     controller.onChange(organsBackGroundChanged());
     _myInstance.container.find("#organGui")[0].appendChild(_myInstance.datGui.domElement);
     var resetViewButton = { 'Reset View':function(){ organsViewer.resetView() }};
+    var one = { 'one':function(){ organsViewer.switchExperiment() }};
+    var two = { 'two':function(){ console.log('two clicked') }};
     var viewAllButton = { 'View All':function(){ organsViewer.viewAll() }};
     speedSlider = _myInstance.datGui.add(organGuiControls, 'Speed', 0.01, 10).step(.01).onChange(speedSliderChanged());
     _myInstance.datGui.add(resetViewButton, 'Reset View');
     _myInstance.datGui.add(viewAllButton, 'View All');
+    experimentFolder = _myInstance.datGui.addFolder('Switch Expirement');
+    experimentFolder.open();
+    experimentFolder.add(one, 'one');
+    experimentFolder.add(two, 'two');
+    experimentFolder.close();
+
     organPartsGui = _myInstance.datGui.addFolder('Visibility Control');
     organPartsGui.open();
     updateOrganSpecificGui(organsViewer.getSceneData());

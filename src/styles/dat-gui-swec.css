@@ -94,8 +94,12 @@
 	opacity:0.8;
 }
 .dg .cr.boolean .property-name{
-	width:80%;
+       width:80%;
 }
+
+.dg .property-name{
+       width:80%;
+ }
 .dg .cr.boolean .c{
 	width:10%;
 	float:right;

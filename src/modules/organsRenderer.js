@@ -473,6 +473,17 @@ var OrgansViewer = function(ModelsLoaderIn)  {
       }
     }
 	}
+
+	this.switchExperiment = function(){
+		var newURL = '/models/organsViewerModels/cardiovascular/heart/animated_nerve_1.json'
+		var groupNames = ['Fitted Heart', 'ECG projection', 'ECG Nodes']
+		var geometries = []
+		_this.scene.removeZincGeometry(_this.scene.findGeometriesWithGroupName(groupNames[0])[0])
+		_this.scene.removeZincGeometry(_this.scene.findGeometriesWithGroupName(groupNames[1])[0])
+		_this.scene.removeZincGlyphset(_this.scene.findGlyphsetsWithGroupName(groupNames[2])[0])
+		modelsLoading()
+		_this.scene.loadMetadataURL(newURL)
+	}
 	
 	this.changeOrganPartsVisibilityCallback = function(name) {
 		return function(value) {
@@ -806,6 +817,10 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	    }
 	  }
 
+	  this.switchModel = function(modelURL){
+		organScene.loadMetadataURL(modelURL)
+	  }
+
 	  /**
 	   * Load organ(s) with the provided species, system and part. This will update
 	   * the UIs, load in the models.
@@ -935,13 +950,19 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	  var _allModelsLoaded = function(){
 	  	if (_this.scene !== undefined){
 	  		if ( _this.scene.findGeometriesWithGroupName('ECG projection').length > 0 ){
-	  		document.getElementById('viewerLoadingGif').remove();
+	  		document.getElementById('viewerLoadingGif').style.display = "none";
 	  		document.getElementById('organsPlayToggle').className = "play";
 	  		document.getElementById('organsPlayToggle').style.visibility = 'visible';
   			console.log('Loading gif removed');
   			clearInterval(loadedTest);
 	  		}
 	  	}
+	  }
+	  var modelsLoading = function(){
+		loadedTest = setInterval(_allModelsLoaded, 300);
+		document.getElementById('viewerLoadingGif').style.display = "";
+		document.getElementById('organsPlayToggle').className = "play";
+		document.getElementById('organsPlayToggle').style.visibility = 'hidden';
 	  }
 
 
