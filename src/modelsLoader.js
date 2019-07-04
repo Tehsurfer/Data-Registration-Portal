@@ -11,6 +11,7 @@ var THREE = require('zincjs').THREE;
 exports.ModelsLoader = function()  {
 	var _this = this;
 	var metaFilesReady = false;
+	var awsBucket = 'https://abi-model-storage.s3-ap-southeast-2.amazonaws.com/mpb'
 	var bodyDirectoryPrefix = "models/body";
 	var organsDirectoryPrefix = "models/organsViewerModels";
 	this.systemMetaURL = bodyDirectoryPrefix + "/" + "bodyMeta.json";

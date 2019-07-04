@@ -475,6 +475,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 	}
 
 	this.switchExperiment = function(){
+		var awsBucket = 'https://cors-anywhere.herokuapp.com/https://abi-model-storage.s3-ap-southeast-2.amazonaws.com/mpb'
 		var newURL = '/models/organsViewerModels/cardiovascular/heart/animated_nerve_1.json'
 		var groupNames = ['Fitted Heart', 'ECG projection', 'ECG Nodes']
 		var geometries = []
@@ -482,7 +483,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		_this.scene.removeZincGeometry(_this.scene.findGeometriesWithGroupName(groupNames[1])[0])
 		_this.scene.removeZincGlyphset(_this.scene.findGlyphsetsWithGroupName(groupNames[2])[0])
 		modelsLoading()
-		_this.scene.loadMetadataURL(newURL)
+		_this.scene.loadMetadataURL(awsBucket + newURL)
 	}
 	
 	this.changeOrganPartsVisibilityCallback = function(name) {
