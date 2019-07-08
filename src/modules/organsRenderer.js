@@ -484,6 +484,7 @@ var OrgansViewer = function(ModelsLoaderIn)  {
 		_this.scene.removeZincGlyphset(_this.scene.findGlyphsetsWithGroupName(groupNames[2])[0])
 		modelsLoading()
 		_this.scene.loadMetadataURL(awsBucket + newURL)
+		
 	}
 	
 	this.changeOrganPartsVisibilityCallback = function(name) {
