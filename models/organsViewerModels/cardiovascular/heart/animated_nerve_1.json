@@ -5,7 +5,7 @@
       "MorphNormals" : false,
       "MorphVertices" : true,
       "Type" : "Surfaces",
-      "URL" : "models/organsViewerModels/cardiovascular/heart/ecgAnimation.json"
+      "URL" : "https://cors-anywhere.herokuapp.com/https://abi-model-storage.s3-ap-southeast-2.amazonaws.com/mpb/models/organsViewerModels/cardiovascular/heart/ecgAnimation.json"
    },
    {
       "GroupName" : "Fitted Heart",
@@ -13,7 +13,7 @@
       "MorphNormals" : false,
       "MorphVertices" : true,
       "Type" : "Surfaces",
-      "URL" : "models/organsViewerModels/cardiovascular/scaffold_heart/webGLExport4.json"
+      "URL" : "https://cors-anywhere.herokuapp.com/https://abi-model-storage.s3-ap-southeast-2.amazonaws.com/mpb/models/organsViewerModels/cardiovascular/scaffold_heart/webGLExport4.json"
    },
    {
       "GroupName" : "Video plane",
@@ -21,7 +21,7 @@
       "MorphNormals" : false,
       "MorphVertices" : false,
       "Type" : "Surfaces",
-      "URL" : "models/organsViewerModels/cardiovascular/heart/videoPlane.json"
+      "URL" : "https://cors-anywhere.herokuapp.com/https://abi-model-storage.s3-ap-southeast-2.amazonaws.com/mpb/models/organsViewerModels/cardiovascular/heart/videoPlane.json"
    },
    {
       "GlyphGeometriesURL" : "models/organsViewerModels/cardiovascular/heart/picking_node_3.json",
@@ -30,7 +30,7 @@
       "MorphNormals" : false,
       "MorphVertices" : true,
       "Type" : "Glyph",
-      "URL" : "models/organsViewerModels/cardiovascular/heart/picking_node_2.json"
+      "URL" : "https://cors-anywhere.herokuapp.com/https://abi-model-storage.s3-ap-southeast-2.amazonaws.com/mpb/models/organsViewerModels/cardiovascular/heart/picking_node_2.json"
    }
 
 ]

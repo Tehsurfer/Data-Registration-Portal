@@ -1,11 +1,11 @@
 [
    {
-      "GlyphGeometriesURL" : "models/organsViewerModels/cardiovascular/heart/picking_node_3.json",
+      "GlyphGeometriesURL" : "https://abi-model-storage.s3-ap-southeast-2.amazonaws.com/mpb/models/organsViewerModels/cardiovascular/heart/picking_node_3.json",
       "GroupName" : "ECG Nodes",
       "MorphColours" : true,
       "MorphNormals" : false,
       "MorphVertices" : false,
       "Type" : "Glyph",
-      "URL" : "models/organsViewerModels/cardiovascular/heart/picking_node_2.json"
+      "URL" : "https://abi-model-storage.s3-ap-southeast-2.amazonaws.com/mpb/models/organsViewerModels/cardiovascular/heart/picking_node_2.json"
    }
 ]
